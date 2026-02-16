@@ -45,4 +45,4 @@ Bu proje, Nesne Yönelimli Programlama (OOP) prensiplerini uygulamak ve katmanl�
 
 ## Lisans
 
-Bu proje MIT Lisansı altında lisanslanmıştır. Daha fazla bilgi için LICENSE dosyasına göz atabilirsiniz.
+Bu proje MIT Lisansı altında lisanslanmıştır. Daha fazla bilgi için [LICENSE] dosyasına göz atabilirsiniz.
