@@ -1,2 +1,0 @@
-class KimlikYonetici:
-    pass
