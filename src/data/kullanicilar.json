@@ -1,0 +1,16 @@
+[
+    {
+        "kullanicild": 11856305,
+        "kullaniciAdi": "MehmetHalil",
+        "email": "mehmet@erbakan.edu.tr",
+        "sifreHash": "123456",
+        "takipEdilenler": []
+    },
+    {
+        "kullanicild": 29662728,
+        "kullaniciAdi": "busraataspinar",
+        "email": "busra@erbakan.edu.tr",
+        "sifreHash": "246810",
+        "takipEdilenler": []
+    }
+]
