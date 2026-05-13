@@ -33,3 +33,31 @@ class YorumYonetici:
         self.json = JsonIsleyicisi()
         self.yorumlar: list[Yorum] = []
         self._verileri_yukle()
+        # ==================================================================
+        # PRIVATE – Yükleme / Kaydetme
+        # ==================================================================
+
+    def _verileri_yukle(self) -> None:
+        """Uygulama başında JSON'dan tüm yorumları belleğe yükler."""
+        ham = self.json.oku(self.YORUM_DOSYA)
+        for d in ham:
+            self.yorumlar.append(Yorum(
+                yorumId=d["yorumId"],
+                gonderild=d["gonderild"],
+                yazarld=d["yazarld"],
+                icerik=d["icerik"],
+                tarih=d["tarih"],
+            ))
+
+    def _yorumlari_kaydet(self) -> None:
+        """Bellekteki yorum listesini JSON dosyasına yazar."""
+        veri = []
+        for y in self.yorumlar:
+            veri.append({
+                "yorumId": y.yorumId,
+                "gonderild": y.gonderild,
+                "yazarld": y.yazarld,
+                "icerik": y.icerik,
+                "tarih": y.tarih,
+            })
+        self.json.yaz(self.YORUM_DOSYA, veri)
