@@ -91,4 +91,37 @@ class GonderiYonetici:
 
         return {"basarili": True}
 
+    # UC9 – Gönderi Düzenle # UC9 – Gönderi Düzenle
+    def gonderi_duzenle(self, gonderild: int, yazarld: int, yeni_icerik: str) -> dict:
+        """
+        Mevcut bir gönderinin içeriğini günceller.
+        Yalnızca gönderinin sahibi düzenleyebilir.
+
+        Parametreler:
+            gonderild   : Düzenlenecek gönderinin ID'si (int)
+            yazarld     : İşlemi yapan kullanıcının ID'si (int)
+            yeni_icerik : Güncellenmiş içerik (str)
+
+        Dönüş:
+            {"basarili": True,  "gonderi": Gonderi}
+            {"basarili": False, "hata": str}
+        """
+        if not yeni_icerik or not yeni_icerik.strip():
+            return {"basarili": False, "hata": "Güncellenmiş içerik boş olamaz."}
+
+        gonderi = self._gonderi_bul(gonderild)
+        if gonderi is None:
+            return {"basarili": False, "hata": "Gönderi bulunamadı."}
+
+        if gonderi.yazarld != yazarld:
+            return {"basarili": False, "hata": "Bu gönderiyi düzenleme yetkiniz yok."}
+
+        gonderi.icerik = yeni_icerik.strip()
+        gonderi.tarih = datetime.now()   # düzenleme zamanı güncellenir
+
+        self._kaydet()
+
+        return {"basarili": True, "gonderi": gonderi}
+
+
 
