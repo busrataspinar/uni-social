@@ -49,3 +49,46 @@ class GonderiYonetici:
 
         return {"basarili": True, "gonderi": gonderi}
 
+    # UC7 – Gönderi Sil
+    def gonderi_sil(
+        self,
+        gonderild: int,
+        yazarld: int,
+        yorum_yonetici=None,
+        begeni_yonetici=None
+    ) -> dict:
+        """
+        Bir gönderiyi siler. Yalnızca gönderinin sahibi silebilir.
+        Silinince bağlı yorumlar ve beğeniler de temizlenir.
+
+        Parametreler:
+            gonderild       : Silinecek gönderinin ID'si (int)
+            yazarld         : İşlemi yapan kullanıcının ID'si (int)
+            yorum_yonetici  : YorumYonetici örneği (opsiyonel)
+            begeni_yonetici : BegeniYonetici örneği (opsiyonel)
+
+        Dönüş:
+            {"basarili": True}
+            {"basarili": False, "hata": str}
+        """
+        gonderi = self._gonderi_bul(gonderild)
+        if gonderi is None:
+            return {"basarili": False, "hata": "Gönderi bulunamadı."}
+
+        if gonderi.yazarld != yazarld:
+            return {"basarili": False, "hata": "Bu gönderiyi silme yetkiniz yok."}
+
+        self.gonderiler.remove(gonderi)
+        self._kaydet()
+
+        # Bağlı yorumları temizle
+        if yorum_yonetici is not None:
+            yorum_yonetici.gonderi_silinince_yorumlari_temizle(gonderild)
+
+        # Bağlı beğenileri temizle
+        if begeni_yonetici is not None:
+            begeni_yonetici.gonderi_silinince_begenileri_temizle(gonderild)
+
+        return {"basarili": True}
+
+
