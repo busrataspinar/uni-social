@@ -60,3 +60,41 @@ class BegeniYonetici:
             })
         self.json.yaz(self.BEGENI_DOSYA, veri)
 
+    def begeniEkle(self, gonderild: int, kullanicild: int) -> dict:
+        """
+        Bir gönderiye beğeni ekler.
+        Kullanıcı aynı gönderiyi zaten beğenmişse işlem yapılmaz.
+
+        Parametreler
+        ------------
+        gonderild   : Beğenilecek gönderinin ID'si
+        kullanicild : Beğeniyi yapan kullanıcının ID'si
+
+        Dönüş
+        -----
+        {"basarili": True,  "begeni": Begeni, "begeni_sayisi": int}
+        {"basarili": False, "mesaj": str}
+        """
+        # Çift beğeni engeli
+        mevcut = self._begeni_bul(gonderild, kullanicild)
+        if mevcut:
+            sayi = self.begeni_sayisi_getir(gonderild)
+            return {
+                "basarili": False,
+                "mesaj": "Bu gönderiyi zaten beğendiniz.",
+                "begeni_sayisi": sayi,
+            }
+
+        yeni_begeni = Begeni(
+            begenild    = _yeni_id(),
+            gonderild   = gonderild,
+            kullanicild = kullanicild,
+            tarih       = datetime.now().isoformat(),
+        )
+
+        self.begeniler.append(yeni_begeni)
+        self._begenileri_kaydet()
+
+        sayi = self.begeni_sayisi_getir(gonderild)
+        return {"basarili": True, "begeni": yeni_begeni, "begeni_sayisi": sayi}
+
