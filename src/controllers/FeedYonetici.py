@@ -76,27 +76,44 @@ class FeedYonetici:
     def ana_akisi_olustur(self, aktif_kullanicild):
         """
         Amaç:Kullanıcının ana sayfa akışını oluşturmak.
-
         Detay:- Kullanıcının takip ettiği kişiler alınır
             - Bu kişilere ait gönderiler filtrelenir
             - Gönderiler tarihe göre (yeniden eskiye) sıralanır
-
         Parametre:aktif_kullanicild: Akışı oluşturulacak kullanıcı
-
         Dönüş:dict: Mesaj ve gönderi listesi içerir
         """
-        pass
+        aktif_kullanici = self.kullanici_bul(aktif_kullanicild)
+
+        if not aktif_kullanici:
+            return {"mesaj": "Kullanıcı bulunamadı.", "gonderiler": []}
+
+        takip_listesi = aktif_kullanici.get("takipEdilenler", [])
+
+        if not takip_listesi:
+            return {"mesaj": "Akış boş. Takip ederek akışınızı canlandırabilirsiniz.", "gonderiler": []}
+
+        akistan_gelenler = [
+            g for g in self.gonderiler or []
+            if g.get("yazarld") in takip_listesi
+        ]
+
+        if not akistan_gelenler:
+            return {"mesaj": "Takip ettikleriniz henüz gönderi paylaşmadı.", "gonderiler": []}
+
+        akistan_gelenler.sort(key=lambda x: x.get("tarih", ""), reverse=True)
+
+        return {"mesaj": "Akış güncellendi.", "gonderiler": akistan_gelenler}
     def akisi_yenile(self, aktif_kullanicild):
         """
         Amaç:Güncel verileri JSON'dan tekrar yükleyerek akışı yenilemek.
-
         Detay:Kullanıcı ve gönderi verileri yeniden okunur ve akış tekrar oluşturulur.
-
         Parametre:aktif_kullanicild: Akışı yenilenecek kullanıcı
-
         Dönüş:dict: Güncellenmiş akış verisi
         """
-        pass
+        self.kullanicilar = self.isleyici.verileri_yukle("kullanicilar") or []
+        self.gonderiler = self.isleyici.verileri_yukle("gonderiler") or []
+
+        return self.ana_akisi_olustur(aktif_kullanicild)
     # ---------------------------------------------------------
     # UC14 & UC15: ARAMA VE FİLTRELEME
     # ---------------------------------------------------------
