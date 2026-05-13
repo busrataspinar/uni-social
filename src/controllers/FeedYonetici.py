@@ -167,14 +167,18 @@ class FeedYonetici:
     def kullanici_gonderilerini_getir(self, hedef_kullanicild):
         """
         Amaç:Belirli bir kullanıcıya ait gönderileri getirmek.
-
         Detay:Tüm gönderiler filtrelenerek sadece ilgili kullanıcıya ait olanlar alınır.
-
         Parametre:hedef_kullanicild: Gönderileri alınacak kullanıcı
-
         Dönüş:list: Kullanıcının gönderileri (tarihe göre sıralı)
         """
-        pass
+        postlar = [
+            g for g in self.gonderiler or []
+            if g.get("yazarld") == hedef_kullanicild
+        ]
+
+        postlar.sort(key=lambda x: x.get("tarih", ""), reverse=True)
+
+        return postlar
 
     def istatistikleri_getir(self, kullanicild):
         """
