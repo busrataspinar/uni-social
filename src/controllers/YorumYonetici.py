@@ -96,7 +96,7 @@ class YorumYonetici:
 
         yeni_yorum = Yorum(
             yorumId=_yeni_id(),
-            gonderild=gonderild,
+                gonderild=gonderild,
             yazarld=yazarld,
             icerik=icerik.strip(),
             tarih=datetime.now().isoformat(),
@@ -138,4 +138,32 @@ class YorumYonetici:
 
         return {"basarili": True, "mesaj": "Yorum başarıyla silindi."}
 
+    # Yardımcı sorgular  (5. kişi / route katmanı tarafından kullanılır)
+    # ==================================================================
+    def gonderi_yorumlari_getir(self, gonderild: int) -> list[Yorum]:
+        """
+        Bir gönderiye ait tüm yorumları eskiden yeniye sıralı döndürür.
+        Gönderi detay sayfasında yorum listesi için kullanılır.
+        """
+        ilgili = [y for y in self.yorumlar if y.gonderild == gonderild]
+        ilgili.sort(key=lambda y: y.tarih)
+        return ilgili
 
+    def kullanici_yorumlari_getir(self, yazarld: int) -> list[Yorum]:
+        """
+        Bir kullanıcının yaptığı tüm yorumları döndürür.
+        Profil sayfası için kullanılabilir.
+        """
+        return [y for y in self.yorumlar if y.yazarld == yazarld]
+
+    def gonderi_yorum_sayisi(self, gonderild: int) -> int:
+        """Bir gönderinin toplam yorum sayısını döndürür."""
+        return len([y for y in self.yorumlar if y.gonderild == gonderild])
+
+    def gonderi_silinince_temizle(self, gonderild: int) -> None:
+        """
+        Bir gönderi silindiğinde ona ait tüm yorumları temizler.
+        GonderiYonetici.gonderi_sil() tarafından çağrılır.
+        """
+        self.yorumlar = [y for y in self.yorumlar if y.gonderild != gonderild]
+        self._yorumlari_kaydet()
