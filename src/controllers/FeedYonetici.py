@@ -13,46 +13,63 @@ class FeedYonetici:
     def kullanici_bul(self, kullanicild):
         """
         Amaç:Verilen kullanıcı ID'sine ait kullanıcıyı bulmak.
-
         Detay:Kullanıcı listesi üzerinde gezilerek eşleşen ID aranır.
-
         Parametre:kullanicild: Aranan kullanıcı ID'si
-
         Dönüş:dict | None: Kullanıcı bulunursa verisi, bulunamazsa None
         """
-        pass
+        for kullanici in self.kullanicilar or []:
+            if kullanici.get("kullanicild") == kullanicild:
+                return kullanici
+        return None
     # ---------------------------------------------------------
     # UC12: TAKİP SİSTEMİ
     # ---------------------------------------------------------
     def kullanici_takip_et(self, aktif_kullanicild, hedef_kullanicild):
         """
         Amaç:Aktif kullanıcının başka bir kullanıcıyı takip etmesini sağlamak.
-
         Detay:- Kullanıcılar kontrol edilir
             - Takip listesine ekleme yapılır
             - Güncel veri JSON dosyasına kaydedilir
-
         Parametreler:aktif_kullanicild: Takip eden kullanıcı
             hedef_kullanicild: Takip edilecek kullanıcı
-
         Dönüş:bool: İşlem başarılıysa True, değilse False
         """
-        pass
+        aktif_kullanici = self.kullanici_bul(aktif_kullanicild)
+        hedef_kullanici = self.kullanici_bul(hedef_kullanicild)
+
+        if not aktif_kullanici or not hedef_kullanici or aktif_kullanicild == hedef_kullanicild:
+            return False
+
+        aktif_kullanici.setdefault("takipEdilenler", [])
+
+        if hedef_kullanicild not in aktif_kullanici["takipEdilenler"]:
+            aktif_kullanici["takipEdilenler"].append(hedef_kullanicild)
+            self.isleyici.verileri_kaydet("kullanicilar", self.kullanicilar)
+            return True
+
+        return False
 
     def takibi_birak(self, aktif_kullanicild, takipten_cikilacakld):
         """
         Amaç:Aktif kullanıcının bir kullanıcıyı takipten çıkmasını sağlamak.
-
         Detay:- Takip listesi kontrol edilir
             - İlgili kullanıcı listeden kaldırılır
             - Güncel veri JSON'a kaydedilir
-
         Parametreler:aktif_kullanicild: İşlem yapan kullanıcı
             takipten_cikilacakld: Takipten çıkarılacak kullanıcı
-
         Dönüş:bool: İşlem başarılıysa True, değilse False
         """
-        pass
+        aktif_kullanici = self.kullanici_bul(aktif_kullanicild)
+
+        if aktif_kullanici:
+            takip_listesi = aktif_kullanici.setdefault("takipEdilenler", [])
+
+            if takipten_cikilacakld in takip_listesi:
+                takip_listesi.remove(takipten_cikilacakld)
+                self.isleyici.verileri_kaydet("kullanicilar", self.kullanicilar)
+                return True
+
+        return False
     # ---------------------------------------------------------
     # UC13: ANA SAYFA AKIŞI (FEED)
     # ---------------------------------------------------------
