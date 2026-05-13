@@ -123,3 +123,20 @@ class BegeniYonetici:
         sayi = self.begeni_sayisi_getir(gonderild)
         return {"basarili": True, "mesaj": "Beğeni kaldırıldı.", "begeni_sayisi": sayi}
 
+    def begeniToggle(self, gonderild: int, kullanicild: int) -> dict:
+        """
+        Kullanıcı beğendiyse kaldırır, beğenmediyse ekler.
+        Route katmanı için tek uç nokta yeterli olur.
+
+        Dönüş
+        -----
+        {"basarili": True, "islem": "eklendi"|"kaldirildi", "begeni_sayisi": int}
+        """
+        mevcut = self._begeni_bul(gonderild, kullanicild)
+        if mevcut:
+            return self.begeniKaldir(gonderild, kullanicild) | {"islem": "kaldirildi"}
+        else:
+            sonuc = self.begeniEkle(gonderild, kullanicild)
+            sonuc["islem"] = "eklendi"
+            return sonuc
+
