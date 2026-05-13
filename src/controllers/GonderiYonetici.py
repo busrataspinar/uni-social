@@ -1,23 +1,19 @@
+import random
+from datetime import datetime
+from models.Gonderi import Gonderi
+from utils.JsonIsleyicisi import JsonIsleyicisi
+
+
 class GonderiYonetici:
+    """
+    Gönderi iş mantığını yöneten Controller sınıfı.
+    Veriler bellekte liste olarak tutulur; her işlemde
+    JsonIsleyicisi aracılığıyla gonderiler.json'a yazılır.
+    """
+
     def __init__(self):
-        # Veritabanı bağlantısını başlatır
-        pass
-
-    def gonderi_olustur(self, yazar_id, icerik):
-        # 1. İçerik kontrolü yap
-        # 2. Yeni ID ve tarih oluştur
-        # 3. Modeli kullanarak nesne yarat
-        # 4. Veritabanına kaydet
-        pass
-
-    def gonderi_sil(self, gonderi_id, kullanici_id):
-        # 1. Gönderiyi ID ile bul
-        # 2. Silmek isteyen kişi yazar mı kontrol et
-        # 3. Yetki varsa veritabanından sil
-        pass
-
-    def gonderi_duzenle(self, gonderi_id, kullanici_id, yeni_icerik):
-        # 1. Gönderiyi ID ile bul
-        # 2. Düzenlemek isteyen kişi yazar mı kontrol et
-        # 3. Yetki varsa içeriği güncelle ve kaydet
-        pass
+        self._json = JsonIsleyicisi()
+        # JSON'dan gelen dict listesini Gonderi nesnelerine çevir
+        self.gonderiler: list[Gonderi] = self._json_to_gonderiler(
+            self._json.oku("gonderiler")
+        )
