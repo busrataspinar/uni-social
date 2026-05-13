@@ -183,16 +183,38 @@ class FeedYonetici:
     def istatistikleri_getir(self, kullanicild):
         """
         Amaç:Kullanıcının profil istatistiklerini hesaplamak.
-
         Detay:- Gönderi sayısı hesaplanır
             - Takip edilen kullanıcı sayısı alınır
             - Takipçi sayısı diğer kullanıcılar üzerinden hesaplanır
-
         Parametre:kullanicild: İstatistikleri hesaplanacak kullanıcı
-
         Dönüş:dict: Gönderi, takipçi ve takip edilen sayıları
         """
-        pass
+        kullanici = self.kullanici_bul(kullanicild)
+
+        if not kullanici:
+            return {
+                "gonderi_sayisi": 0,
+                "takipci_sayisi": 0,
+                "takip_edilen_sayisi": 0
+            }
+
+        gonderi_sayisi = sum(
+            1 for g in self.gonderiler or []
+            if g.get("yazarld") == kullanicild
+        )
+
+        takip_edilen_sayisi = len(kullanici.get("takipEdilenler", []))
+
+        takipci_sayisi = sum(
+            1 for k in self.kullanicilar or []
+            if kullanicild in k.get("takipEdilenler", [])
+        )
+
+        return {
+            "gonderi_sayisi": gonderi_sayisi,
+            "takipci_sayisi": takipci_sayisi,
+            "takip_edilen_sayisi": takip_edilen_sayisi
+        }
 
     def takip_listelerini_getir(self, kullanicild):
         """
