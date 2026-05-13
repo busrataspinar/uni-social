@@ -219,12 +219,32 @@ class FeedYonetici:
     def takip_listelerini_getir(self, kullanicild):
         """
         Amaç:Kullanıcının takipçi ve takip ettiği kullanıcı listelerini oluşturmak.
-
         Detay:- Takip edilen kullanıcılar listelenir
             - Diğer kullanıcılar üzerinden takipçiler bulunur
-
         Parametre:kullanicild: Listeleri alınacak kullanıcı
-
         Dönüş:dict: Takipçiler ve takip edilenler listesi
         """
-        pass
+        kullanici = self.kullanici_bul(kullanicild)
+
+        if not kullanici:
+            return {"takipciler": [], "takip_edilenler": []}
+
+        takip_edilen_idler = kullanici.get("takipEdilenler", [])
+
+        takipciler = []
+        takip_edilenler = []
+
+        for k in self.kullanicilar or []:
+            k_id = k.get("kullanicild")
+            k_isim = k.get("kullaniciAdi")
+
+            if k_id in takip_edilen_idler:
+                takip_edilenler.append({"id": k_id, "isim": k_isim})
+
+            if kullanicild in k.get("takipEdilenler", []):
+                takipciler.append({"id": k_id, "isim": k_isim})
+
+        return {
+            "takipciler": takipciler,
+            "takip_edilenler": takip_edilenler
+        }
