@@ -61,3 +61,13 @@ class YorumYonetici:
                 "tarih": y.tarih,
             })
         self.json.yaz(self.YORUM_DOSYA, veri)
+
+        # PRIVATE – Yardımcı arama
+        # ==================================================================
+
+        def _yorum_bul(self, yorumId: int) -> Yorum | None:
+            """ID'ye göre yorum nesnesi döndürür; bulamazsa None."""
+            for y in self.yorumlar:
+                if y.yorumId == yorumId:
+                    return y
+            return None
