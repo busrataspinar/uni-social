@@ -59,6 +59,16 @@ class BegeniYonetici:
                 "tarih"       : b.tarih,
             })
         self.json.yaz(self.BEGENI_DOSYA, veri)
+    def _begeni_bul(self, gonderild: int, kullanicild: int) -> Begeni | None:
+        """
+        Kullanıcının belirli bir gönderiyi daha önce beğenip
+        beğenmediğini kontrol eder.
+        Varsa Begeni nesnesini, yoksa None döndürür.
+        """
+        for b in self.begeniler:
+            if b.gonderild == gonderild and b.kullanicild == kullanicild:
+                return b
+        return None
 
     def begeniEkle(self, gonderild: int, kullanicild: int) -> dict:
         """
@@ -139,4 +149,25 @@ class BegeniYonetici:
             sonuc = self.begeniEkle(gonderild, kullanicild)
             sonuc["islem"] = "eklendi"
             return sonuc
+    def begeni_sayisi_getir(self, gonderild: int) -> int:
+        """Bir gönderinin toplam beğeni sayısını döndürür."""
+        return len([b for b in self.begeniler if b.gonderild == gonderild])
 
+    def kullanici_begendi_mi(self, gonderild: int, kullanicild: int) -> bool:
+        """
+        Kullanıcının ilgili gönderiyi beğenip beğenmediğini döndürür.
+        Template'te beğeni butonunun rengini belirlemek için kullanılır.
+        """
+        return self._begeni_bul(gonderild, kullanicild) is not None
+
+    def kullanici_begeni_gecmisi(self, kullanicild: int) -> list[Begeni]:
+        """Bir kullanıcının beğendiği tüm gönderilerin beğeni kayıtlarını döndürür."""
+        return [b for b in self.begeniler if b.kullanicild == kullanicild]
+
+    def gonderi_silinince_temizle(self, gonderild: int) -> None:
+        """
+        Bir gönderi silindiğinde ona ait tüm beğenileri temizler.
+        GonderiYonetici.gonderi_sil() tarafından çağrılır.
+        """
+        self.begeniler = [b for b in self.begeniler if b.gonderild != gonderild]
+        self._begenileri_kaydet()
