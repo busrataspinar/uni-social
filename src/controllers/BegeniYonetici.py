@@ -98,3 +98,28 @@ class BegeniYonetici:
         sayi = self.begeni_sayisi_getir(gonderild)
         return {"basarili": True, "begeni": yeni_begeni, "begeni_sayisi": sayi}
 
+    def begeniKaldir(self, gonderild: int, kullanicild: int) -> dict:
+        """
+        Kullanıcının bir gönderiye yaptığı beğeniyi kaldırır.
+
+        Parametreler
+        ------------
+        gonderild   : Beğenisi kaldırılacak gönderinin ID'si
+        kullanicild : Beğeniyi kaldıracak kullanıcının ID'si
+
+        Dönüş
+        -----
+        {"basarili": True,  "mesaj": str, "begeni_sayisi": int}
+        {"basarili": False, "mesaj": str}
+        """
+        mevcut = self._begeni_bul(gonderild, kullanicild)
+
+        if not mevcut:
+            return {"basarili": False, "mesaj": "Bu gönderiyi beğenmediniz."}
+
+        self.begeniler.remove(mevcut)
+        self._begenileri_kaydet()
+
+        sayi = self.begeni_sayisi_getir(gonderild)
+        return {"basarili": True, "mesaj": "Beğeni kaldırıldı.", "begeni_sayisi": sayi}
+
