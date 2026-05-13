@@ -120,14 +120,23 @@ class FeedYonetici:
     def kullanici_ara(self, arama_metni):
         """
         Amaç:Kullanıcı adına göre arama yapmak.
-
         Detay:Girilen metin kullanıcı adları içinde aranır ve eşleşen sonuçlar döndürülür.
-
         Parametre:arama_metni: Aranacak ifade
-
         Dönüş:list: Eşleşen kullanıcıların ID ve kullanıcı adı bilgileri
         """
-        pass
+        if not arama_metni or not arama_metni.strip():
+            return []
+
+        arama_metni_lower = arama_metni.lower().strip()
+
+        return [
+            {
+                "kullanicild": k.get("kullanicild"),
+                "kullaniciAdi": k.get("kullaniciAdi")
+            }
+            for k in self.kullanicilar or []
+            if arama_metni_lower in k.get("kullaniciAdi", "").lower()
+        ]
 
     def hashtag_ile_filtrele(self, hashtag):
         """
