@@ -141,14 +141,26 @@ class FeedYonetici:
     def hashtag_ile_filtrele(self, hashtag):
         """
         Amaç:Belirli bir hashtag içeren gönderileri filtrelemek.
-
         Detay:Gönderi içerikleri taranır ve hashtag içerenler listelenir.
-
         Parametre:hashtag: Aranan etiket (#python gibi)
-
         Dönüş:list: Filtrelenmiş gönderiler
         """
-        pass
+        if not hashtag or not hashtag.strip() or hashtag.strip() == "#":
+            return []
+
+        hashtag = hashtag.strip().lower()
+
+        if not hashtag.startswith("#"):
+            hashtag = "#" + hashtag
+
+        sonuclar = [
+            g for g in self.gonderiler or []
+            if hashtag in g.get("icerik", "").lower()
+        ]
+
+        sonuclar.sort(key=lambda x: x.get("tarih", ""), reverse=True)
+
+        return sonuclar
     # ---------------------------------------------------------
     # PROFİL VE LİSTELEME DESTEĞİ
     # ---------------------------------------------------------
