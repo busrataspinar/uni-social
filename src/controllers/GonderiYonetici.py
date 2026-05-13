@@ -124,4 +124,64 @@ class GonderiYonetici:
         return {"basarili": True, "gonderi": gonderi}
 
 
+    # Yardımcı – Sorgulama
+    def tum_gonderileri_getir(self) -> list:
+        """Tüm gönderileri döndürür."""
+        return list(self.gonderiler)
+
+    def kullanici_gonderilerini_getir(self, yazarld: int) -> list:
+        """Belirli bir kullanıcının gönderilerini döndürür (profil sayfası)."""
+        return [g for g in self.gonderiler if g.yazarld == yazarld]
+
+    def gonderi_getir(self, gonderild: int):
+        """ID'ye göre tekil gönderi döndürür; bulunamazsa None."""
+        return self._gonderi_bul(gonderild)
+
+    # ------------------------------------------------------------------
+    # İç yardımcı metotlar
+    # ------------------------------------------------------------------
+    def _gonderi_bul(self, gonderild: int):
+        for g in self.gonderiler:
+            if g.gonderild == gonderild:
+                return g
+        return None
+
+    def _yeni_id_uret(self) -> int:
+        """8 haneli benzersiz rastgele ID üretir (JSON yapısıyla uyumlu)."""
+        mevcut_idler = {g.gonderild for g in self.gonderiler}
+        while True:
+            yeni = random.randint(10000000, 99999999)
+            if yeni not in mevcut_idler:
+                return yeni
+
+    def _json_to_gonderiler(self, veri: list) -> list:
+        """JSON'dan okunan dict listesini Gonderi nesnelerine çevirir."""
+        gonderiler = []
+        if not veri:
+            return gonderiler
+        for d in veri:
+            g = Gonderi(
+                gonderild=d["gonderild"],
+                yazarld=d["yazarld"],
+                icerik=d["icerik"],
+                tarih=datetime.fromisoformat(d["tarih"])
+                if isinstance(d["tarih"], str) else d["tarih"]
+            )
+            gonderiler.append(g)
+        return gonderiler
+
+    def _kaydet(self):
+        """Bellekteki gönderi listesini JSON'a yazar."""
+        veri = [
+            {
+                "gonderild": g.gonderild,
+                "yazarld": g.yazarld,
+                "icerik": g.icerik,
+                "tarih": g.tarih.isoformat()
+                if isinstance(g.tarih, datetime) else g.tarih
+            }
+            for g in self.gonderiler
+        ]
+        self._json.yaz("gonderiler", veri)
+
 
