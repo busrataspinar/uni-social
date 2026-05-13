@@ -65,9 +65,45 @@ class YorumYonetici:
         # PRIVATE – Yardımcı arama
         # ==================================================================
 
-        def _yorum_bul(self, yorumId: int) -> Yorum | None:
-            """ID'ye göre yorum nesnesi döndürür; bulamazsa None."""
-            for y in self.yorumlar:
-                if y.yorumId == yorumId:
-                    return y
-            return None
+    def _yorum_bul(self, yorumId: int) -> Yorum | None:
+        """ID'ye göre yorum nesnesi döndürür; bulamazsa None."""
+        for y in self.yorumlar:
+            if y.yorumId == yorumId:
+                return y
+        return None
+
+        # Tasarım dokümanı: yorumEkle(postId, yazarId, icerik) : void
+        # ==================================================================
+
+        def yorumEkle(self, gonderild: int, yazarld: int, icerik: str) -> dict:
+            """
+            Bir gönderiye yeni bir yorum ekler.
+
+            Parametreler
+            ------------
+            gonderild : Yorum yapılacak gönderinin ID'si
+            yazarld   : Yorumu yapan kullanıcının ID'si
+            icerik    : Yorum metni
+
+            Dönüş
+            -----
+            {"basarili": True,  "yorum": Yorum}
+            {"basarili": False, "mesaj": str}
+            """
+            # Kural: İçerik boş olamaz (Tasarım dok. 2.6.3 → Hata Durumları)
+            if not icerik or not icerik.strip():
+                return {"basarili": False, "mesaj": "Yorum içeriği boş olamaz."}
+
+            yeni_yorum = Yorum(
+                yorumId=_yeni_id(),
+                gonderild=gonderild,
+                yazarld=yazarld,
+                icerik=icerik.strip(),
+                tarih=datetime.now().isoformat(),
+            )
+
+            self.yorumlar.append(yeni_yorum)
+            self._yorumlari_kaydet()
+
+            return {"basarili": True, "yorum": yeni_yorum}
+
