@@ -75,11 +75,11 @@ class YorumYonetici:
         # Tasarım dokümanı: yorumEkle(postId, yazarId, icerik) : void
         # ==================================================================
 
-        def yorumEkle(self, gonderild: int, yazarld: int, icerik: str) -> dict:
-            """
-            Bir gönderiye yeni bir yorum ekler.
+    def yorumEkle(self, gonderild: int, yazarld: int, icerik: str) -> dict:
+        """
+        Bir gönderiye yeni bir yorum ekler.
 
-            Parametreler
+        Parametreler
             ------------
             gonderild : Yorum yapılacak gönderinin ID'si
             yazarld   : Yorumu yapan kullanıcının ID'si
@@ -91,19 +91,51 @@ class YorumYonetici:
             {"basarili": False, "mesaj": str}
             """
             # Kural: İçerik boş olamaz (Tasarım dok. 2.6.3 → Hata Durumları)
-            if not icerik or not icerik.strip():
-                return {"basarili": False, "mesaj": "Yorum içeriği boş olamaz."}
+        if not icerik or not icerik.strip():
+            return {"basarili": False, "mesaj": "Yorum içeriği boş olamaz."}
 
-            yeni_yorum = Yorum(
-                yorumId=_yeni_id(),
-                gonderild=gonderild,
-                yazarld=yazarld,
-                icerik=icerik.strip(),
-                tarih=datetime.now().isoformat(),
-            )
+        yeni_yorum = Yorum(
+            yorumId=_yeni_id(),
+            gonderild=gonderild,
+            yazarld=yazarld,
+            icerik=icerik.strip(),
+            tarih=datetime.now().isoformat(),
+        )
 
-            self.yorumlar.append(yeni_yorum)
-            self._yorumlari_kaydet()
+        self.yorumlar.append(yeni_yorum)
+        self._yorumlari_kaydet()
 
-            return {"basarili": True, "yorum": yeni_yorum}
+        return {"basarili": True, "yorum": yeni_yorum}
+
+    # Yorum Silme
+    # Tasarım dokümanı: yorumSil(yorumId) : boolean
+    def yorumSil(self, yorumId: int, aktif_kullanicild: int) -> dict:
+        """
+        Belirtilen yorumu siler.
+        Yalnızca yorumun sahibi silebilir.
+
+        Parametreler
+        ------------
+        yorumId            : Silinecek yorumun ID'si
+        aktif_kullanicild  : İşlemi yapan (oturumda olan) kullanıcının ID'si
+
+        Dönüş
+        -----
+        {"basarili": True,  "mesaj": str}
+        {"basarili": False, "mesaj": str}
+        """
+        yorum = self._yorum_bul(yorumId)
+
+        if yorum is None:
+            return {"basarili": False, "mesaj": "Yorum bulunamadı."}
+
+        # Sahiplik kontrolü (Tasarım dok. 2.6.3 → Yetki ihlali)
+        if yorum.yazarld != aktif_kullanicild:
+            return {"basarili": False, "mesaj": "Bu yorumu silme yetkiniz yok."}
+
+        self.yorumlar.remove(yorum)
+        self._yorumlari_kaydet()
+
+        return {"basarili": True, "mesaj": "Yorum başarıyla silindi."}
+
 
