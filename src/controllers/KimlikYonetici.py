@@ -7,7 +7,6 @@ from models.Kullanici import Kullanici
 from models.Oturum import Oturum
 from utils.JsonIsleyicisi import JsonIsleyicisi
 
-
 def _yeni_id() -> int:
     """8 haneli benzersiz rastgele ID üretir."""
     return random.randint(10_000_000, 99_999_999)
@@ -17,7 +16,6 @@ def _edu_mail_gecerli_mi(email: str) -> bool:
     """UC4 - Regex ile .edu veya .edu.tr uzantılı e-posta denetimi."""
     desen = r"^[\w\.-]+@[\w\.-]+\.edu(\.tr)?$"
     return re.match(desen, email.strip().lower()) is not None
-
 
 class KimlikYonetici:
     """
