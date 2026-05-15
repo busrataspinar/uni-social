@@ -1,8 +1,26 @@
 [
     {
-        "begenild": 18090992,
-        "gonderild": 30155879,
-        "kullanicild": 11856305,
-        "tarih": "2026-05-09T15:49:24.328149"
+        "begenild": 1,
+        "gonderild": 1,
+        "kullanicild": 2,
+        "tarih": "2026-05-01T10:45:00"
+    },
+    {
+        "begenild": 2,
+        "gonderild": 1,
+        "kullanicild": 3,
+        "tarih": "2026-05-01T11:15:00"
+    },
+    {
+        "begenild": 3,
+        "gonderild": 2,
+        "kullanicild": 1,
+        "tarih": "2026-05-02T14:30:00"
+    },
+    {
+        "begenild": 4,
+        "gonderild": 3,
+        "kullanicild": 1,
+        "tarih": "2026-05-03T09:20:00"
     }
 ]
