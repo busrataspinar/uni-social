@@ -1,0 +1,23 @@
+[
+    {
+        "kullanicild": 1,
+        "kullaniciAdi": "mehmet_halil",
+        "email": "mehmet@ogr.edu.tr",
+        "sifreHash": "scrypt:32768:8:1$6GtR0Gv3B6GfJH8s$0bbddfefc39900b9b39e873c72e08c337b61f40ff1c4fbc49d87e1f43b6f8dadc3e3c6ac80f47161dc44351e3da9f1257e519a242fead8dd733427fac096b15f",
+        "takipEdilenler": [2, 3]
+    },
+    {
+        "kullanicild": 2,
+        "kullaniciAdi": "yagmur_nisa",
+        "email": "yagmur@ogr.edu.tr",
+        "sifreHash": "scrypt:32768:8:1$whCa4FCaASSr1UZh$b4b8abff9210753c3ed2876b7183841ae8ebd89146a0c0bb7b6e5e9702423cf15a0af28bc249d9a87e1370db2077f22408b04b48cc106da750a41365f6b649b1",
+        "takipEdilenler": [1]
+    },
+    {
+        "kullanicild": 3,
+        "kullaniciAdi": "busra_tas",
+        "email": "busra@ogr.edu.tr",
+        "sifreHash": "scrypt:32768:8:1$y1WHmWuHULOMprpn$9cb3cb277755edaef4742f7db13c884ace1580c98dc53070e60260f23ce5fc593001f4eef866beb7e108ac9ef3348a4c784ab5cbba657b9dfe1603cd6b837943",
+        "takipEdilenler": [1, 2]
+    }
+]

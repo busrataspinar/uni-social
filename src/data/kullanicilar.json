@@ -1,16 +1,23 @@
 [
     {
-        "kullanicild": 11856305,
-        "kullaniciAdi": "MehmetHalil",
-        "email": "mehmet@erbakan.edu.tr",
-        "sifreHash": "123456",
-        "takipEdilenler": []
+        "kullanicild": 1,
+        "kullaniciAdi": "mehmet_halil",
+        "email": "mehmet@ogr.edu.tr",
+        "sifreHash": "pbkdf2:sha256:örnek_hash_buraya",
+        "takipEdilenler": [2, 3]
     },
     {
-        "kullanicild": 29662728,
-        "kullaniciAdi": "busraataspinar",
-        "email": "busra@erbakan.edu.tr",
-        "sifreHash": "246810",
-        "takipEdilenler": []
+        "kullanicild": 2,
+        "kullaniciAdi": "yagmur_nisa",
+        "email": "yagmur@ogr.edu.tr",
+        "sifreHash": "pbkdf2:sha256:örnek_hash_buraya",
+        "takipEdilenler": [1]
+    },
+    {
+        "kullanicild": 3,
+        "kullaniciAdi": "busra_tas",
+        "email": "busra@ogr.edu.tr",
+        "sifreHash": "pbkdf2:sha256:örnek_hash_buraya",
+        "takipEdilenler": [1, 2]
     }
 ]
