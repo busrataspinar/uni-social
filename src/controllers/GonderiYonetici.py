@@ -1,144 +1,223 @@
-import random
+
+
 from datetime import datetime
 from models.Gonderi import Gonderi
-from utils.JsonIsleyicisi import JsonIsleyicisi
+from data.VeriDeposu import VeriDeposu
 
 
 class GonderiYonetici:
     """
-    Gönderi iş mantığını yöneten Controller sınıfı.
-    Veriler bellekte liste olarak tutulur; her işlemde
-    JsonIsleyicisi aracılığıyla veritabanına yazılır.
+    Gönderi işlemlerini yöneten Controller sınıfı.
+
+    Bu sınıf:
+    - Gönderi oluşturur
+    - Gönderi siler
+    - Gönderi düzenler
+    - Gönderileri listeler
+
+    Tüm veriler VeriDeposu Singleton sınıfı üzerinden ve
+    saf OOP (Nesne) modelleriyle yönetilir.
     """
 
     def __init__(self):
-        self._json = JsonIsleyicisi()
-        # Güncelleme: .oku yerine .veriOku metodu kullanıldı
-        self.gonderiler: list[Gonderi] = self._json_to_gonderiler(
-            self._json.veriOku("gonderiler")
-        )
+        """
+        Veri deposundaki ham gönderi sözlüklerini Gonderi nesnelerine
+        dönüştürerek belleğe bağlar.
+        """
+        self.depo = VeriDeposu()
 
-    def gonderi_olustur(self, yazarld: int, icerik: str) -> dict:
-        """Yeni bir gönderi oluşturur."""
+        # Depodaki ham dict listesini, korumalı Gonderi nesne listesine çeviriyoruz
+        self.gonderiler: list[Gonderi] = [
+            Gonderi(
+                gonderiId=g["gonderiId"],
+                yazarId=g["yazarId"],
+                icerik=g["icerik"],
+                tarih=g["tarih"]
+            ) for g in self.depo.tum_gonderiler
+        ]
+
+    def _depoyu_senkronize_et(self) -> None:
+        """
+        Bellekteki güncel Gonderi nesne listesini, VeriDeposu'nun
+        beklediği ham sözlük (dict) formatına çevirerek merkezi depoyu günceller.
+        """
+        self.depo.tum_gonderiler = [
+            {
+                "gonderiId": g.gonderiId,
+                "yazarId": g.yazarId,
+                "icerik": g.icerik,
+                "tarih": g.tarih
+            } for g in self.gonderiler
+        ]
+
+    # =========================================================
+    # GÖNDERİ OLUŞTURMA
+    # =========================================================
+
+    def gonderi_olustur(self, yazarId: int, icerik: str) -> dict:
+        """
+        Yeni gönderi oluşturur, listeye ekler ve diske kaydeder.
+
+        Args:
+            yazarId (int): Gönderiyi oluşturan kullanıcı ID
+            icerik (str): Gönderi içeriği
+
+        Returns:
+            dict: İşlem sonucu ve oluşturulan Gonderi nesnesi
+        """
         if not icerik or not icerik.strip():
-            return {"basarili": False, "hata": "Gönderi içeriği boş olamaz."}
+            return {
+                "basarili": False,
+                "mesaj": "Gönderi içeriği boş olamaz."
+            }
 
-        yeni_id = self._yeni_id_uret()
-
-        gonderi = Gonderi(
-            gonderild=yeni_id,
-            yazarld=yazarld,
+        # VeriDeposu'nun güvenli ve ardışık ID üretecini kullanıyoruz
+        yeni_gonderi = Gonderi(
+            gonderiId=self.depo.yeni_gonderi_id(),
+            yazarId=yazarId,
             icerik=icerik.strip(),
-            tarih=datetime.now()
+            tarih=datetime.now().isoformat()
         )
 
-        self.gonderiler.append(gonderi)
-        self._kaydet()
+        # Listeye doğrudan nesne olarak ekliyoruz
+        self.gonderiler.append(yeni_gonderi)
 
-        return {"basarili": True, "gonderi": gonderi}
+        # Değişiklikleri merkezi depoya aktar ve kaydet
+        self._depoyu_senkronize_et()
+        self.depo.gonderileri_kaydet()
+
+        return {
+            "basarili": True,
+            "gonderi": yeni_gonderi
+        }
+
+    # =========================================================
+    # GÖNDERİ SİLME
+    # =========================================================
 
     def gonderi_sil(
-        self,
-        gonderild: int,
-        yazarld: int,
-        yorum_yonetici=None,
-        begeni_yonetici=None
+            self,
+            gonderiId: int,
+            aktif_kullaniciId: int,
+            yorum_yonetici=None,
+            begeni_yonetici=None
     ) -> dict:
         """
-        Bir gönderiyi siler. Yalnızca gönderinin sahibi silebilir.
-        Silinince bağlı yorumlar ve beğeniler de temizlenir.
+        Gönderi siler. Sadece gönderi sahibi silebilir.
+        İlişkili yorum ve beğenileri de temizler.
+
+        Args:
+            gonderiId (int): Silinecek gönderi ID
+            aktif_kullaniciId (int): İşlem yapan kullanıcı ID
+            yorum_yonetici (YorumYonetici, optional): Yorum temizliği için nesne
+            begeni_yonetici (BegeniYonetici, optional): Beğeni temizliği için nesne
         """
-        gonderi = self._gonderi_bul(gonderild)
+        gonderi = self.gonderi_getir(gonderiId)
+
         if gonderi is None:
-            return {"basarili": False, "hata": "Gönderi bulunamadı."}
-
-        if gonderi.yazarld != yazarld:
-            return {"basarili": False, "hata": "Bu gönderiyi silme yetkiniz yok."}
-
-        self.gonderiler.remove(gonderi)
-        self._kaydet()
-
-        # Güncelleme: Diğer sınıfların temizleme metot isimleri (gonderi_silinince_temizle) ile eşitlendi
-        if yorum_yonetici is not None:
-            yorum_yonetici.gonderi_silinince_temizle(gonderild)
-
-        if begeni_yonetici is not None:
-            begeni_yonetici.gonderi_silinince_temizle(gonderild)
-
-        return {"basarili": True}
-
-    def gonderi_duzenle(self, gonderild: int, yazarld: int, yeni_icerik: str) -> dict:
-        """Mevcut bir gönderinin içeriğini günceller."""
-        if not yeni_icerik or not yeni_icerik.strip():
-            return {"basarili": False, "hata": "Güncellenmiş içerik boş olamaz."}
-
-        gonderi = self._gonderi_bul(gonderild)
-        if gonderi is None:
-            return {"basarili": False, "hata": "Gönderi bulunamadı."}
-
-        if gonderi.yazarld != yazarld:
-            return {"basarili": False, "hata": "Bu gönderiyi düzenleme yetkiniz yok."}
-
-        gonderi.icerik = yeni_icerik.strip()
-        gonderi.tarih = datetime.now()
-
-        self._kaydet()
-
-        return {"basarili": True, "gonderi": gonderi}
-
-    def tum_gonderileri_getir(self) -> list:
-        """Tüm gönderileri döndürür."""
-        return list(self.gonderiler)
-
-    def kullanici_gonderilerini_getir(self, yazarld: int) -> list:
-        """Belirli bir kullanıcının gönderilerini döndürür (profil sayfası)."""
-        return [g for g in self.gonderiler if g.yazarld == yazarld]
-
-    def gonderi_getir(self, gonderild: int):
-        """ID'ye göre tekil gönderi döndürür; bulunamazsa None."""
-        return self._gonderi_bul(gonderild)
-
-    def _gonderi_bul(self, gonderild: int):
-        for g in self.gonderiler:
-            if g.gonderild == gonderild:
-                return g
-        return None
-
-    def _yeni_id_uret(self) -> int:
-        """8 haneli benzersiz rastgele ID üretir."""
-        mevcut_idler = {g.gonderild for g in self.gonderiler}
-        while True:
-            yeni = random.randint(10000000, 99999999)
-            if yeni not in mevcut_idler:
-                return yeni
-
-    def _json_to_gonderiler(self, veri: list) -> list:
-        """JSON'dan okunan dict listesini Gonderi nesnelerine çevirir."""
-        gonderiler = []
-        if not veri:
-            return gonderiler
-        for d in veri:
-            g = Gonderi(
-                gonderild=d["gonderild"],
-                yazarld=d["yazarld"],
-                icerik=d["icerik"],
-                tarih=datetime.fromisoformat(d["tarih"])
-                if isinstance(d["tarih"], str) else d["tarih"]
-            )
-            gonderiler.append(g)
-        return gonderiler
-
-    def _kaydet(self):
-        """Bellekteki gönderi listesini JSON'a yazar."""
-        veri = [
-            {
-                "gonderild": g.gonderild,
-                "yazarld": g.yazarld,
-                "icerik": g.icerik,
-                "tarih": g.tarih.isoformat()
-                if isinstance(g.tarih, datetime) else g.tarih
+            return {
+                "basarili": False,
+                "mesaj": "Gönderi bulunamadı."
             }
-            for g in self.gonderiler
+
+        # Nesne yapısına geçtiğimiz için gonderi.yazarId şeklinde kontrol ediyoruz
+        if gonderi.yazarId != aktif_kullaniciId:
+            return {
+                "basarili": False,
+                "mesaj": "Bu gönderiyi silme yetkiniz yok."
+            }
+
+        # Nesneyi listeden kaldırıyoruz
+        self.gonderiler.remove(gonderi)
+
+        # Depoyu senkronize edip diske yazıyoruz
+        self._depoyu_senkronize_et()
+        self.depo.gonderileri_kaydet()
+
+        # Gönderiye ait yorumları temizle
+        if yorum_yonetici:
+            yorum_yonetici.gonderi_silinince_temizle(gonderiId)
+
+        # Gönderiye ait beğenileri temizle
+        if begeni_yonetici:
+            begeni_yonetici.gonderi_silinince_temizle(gonderiId)
+
+        return {
+            "basarili": True,
+            "mesaj": "Gönderi silindi."
+        }
+
+    # =========================================================
+    # GÖNDERİ DÜZENLEME
+    # =========================================================
+
+    def gonderi_duzenle(
+            self,
+            gonderiId: int,
+            aktif_kullaniciId: int,
+            yeni_icerik: str
+    ) -> dict:
+        """
+        Gönderi içeriğini günceller ve tarihini yeniler.
+        """
+        if not yeni_icerik or not yeni_icerik.strip():
+            return {
+                "basarili": False,
+                "mesaj": "Yeni içerik boş olamaz."
+            }
+
+        gonderi = self.gonderi_getir(gonderiId)
+
+        if gonderi is None:
+            return {
+                "basarili": False,
+                "mesaj": "Gönderi bulunamadı."
+            }
+
+        if gonderi.yazarId != aktif_kullaniciId:
+            return {
+                "basarili": False,
+                "mesaj": "Bu gönderiyi düzenleme yetkiniz yok."
+            }
+
+        # Değerleri nesne değişkenleri üzerinden güncelliyoruz
+        gonderi.icerik = yeni_icerik.strip()
+        gonderi.tarih = datetime.now().isoformat()
+
+        # Depoyu güncelleyip kaydediyoruz
+        self._depoyu_senkronize_et()
+        self.depo.gonderileri_kaydet()
+
+        return {
+            "basarili": True,
+            "gonderi": gonderi
+        }
+
+    # =========================================================
+    # GÖNDERİ GETİRME (SORGULAR)
+    # =========================================================
+
+    def tum_gonderileri_getir(self) -> list[Gonderi]:
+        """
+        Sistemdeki tüm gönderi nesnelerini döndürür.
+        """
+        return self.gonderiler
+
+    def kullanici_gonderilerini_getir(self, yazarId: int) -> list[Gonderi]:
+        """
+        Belirli kullanıcıya ait gönderi nesnelerini filtreler.
+        """
+        return [
+            g for g in self.gonderiler
+            if g.yazarId == yazarId
         ]
-        # Güncelleme: .yaz yerine .veriYaz metodu kullanıldı
-        self._json.veriYaz("gonderiler", veri)
+
+    def gonderi_getir(self, gonderiId: int) -> Gonderi | None:
+        """
+        ID'ye göre tek bir Gonderi nesnesi getirir. Bulamazsa None döner.
+        """
+        for gonderi in self.gonderiler:
+            if gonderi.gonderiId == gonderiId:
+                return gonderi
+
+        return None
