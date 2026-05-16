@@ -9,19 +9,7 @@ class JsonIsleyicisi:
     Facade tasarım deseni ile alt seviye dosya işlemlerini gizler.
     """
 
-    # --- KimlikYonetici.py uyumluluğu için ---
-    def verileri_yukle(self, dosyaYolu):
-        return self.veriOku(dosyaYolu)
 
-    def verileri_kaydet(self, dosyaYolu, veri):
-        return self.veriYaz(dosyaYolu, veri)
-
-    # --- GonderiYonetici.py uyumluluğu için ---
-    def oku(self, dosyaYolu):
-        return self.veriOku(dosyaYolu)
-
-    def yaz(self, dosyaYolu, veri):
-        return self.veriYaz(dosyaYolu, veri)
 
     def __init__(self, veri_dizini="data"):
         """
