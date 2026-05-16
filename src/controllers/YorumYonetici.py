@@ -1,115 +1,177 @@
-import random
+
+
 from datetime import datetime
-
 from models.Yorum import Yorum
-from utils.JsonIsleyicisi import JsonIsleyicisi
-
-
-def _yeni_id() -> int:
-    """8 haneli rastgele tam sayı üretir."""
-    return random.randint(10_000_000, 99_999_999)
+from data.VeriDeposu import VeriDeposu
 
 
 class YorumYonetici:
     """
-    Gönderilere yapılan yorumların oluşturulması ve silinmesini
-    yöneten Controller sınıfı.
+    Gönderilere yapılan yorum işlemlerini yöneten Controller sınıfı.
+
+    Tüm işlemler VeriDeposu Singleton sınıfı üzerinden ve
+    saf OOP (Nesne) modelleriyle yönetilir.
     """
 
-    # Güncelleme: Klasör yapısı ve uzantı kaldırıldı.
-    YORUM_DOSYA = "yorumlar"
+    def __init__(self):
+        """
+        Veri deposundaki ham yorum sözlüklerini Yorum nesnelerine
+        dönüştürerek belleğe bağlar.
+        """
+        self.depo = VeriDeposu()
 
-    def __init__(self) -> None:
-        self.json = JsonIsleyicisi()
-        self.yorumlar: list[Yorum] = []
-        self._verileri_yukle()
+        # Depodaki ham dict listesini Yorum nesne listesine çeviriyoruz
+        self.yorumlar: list[Yorum] = [
+            Yorum(
+                yorumId=y["yorumId"],
+                gonderiId=y["gonderiId"],
+                yazarId=y["yazarId"],
+                icerik=y["icerik"],
+                tarih=y["tarih"]
+            ) for y in self.depo.tum_yorumlar
+        ]
 
-    # ==================================================================
-    # PRIVATE – Yükleme / Kaydetme
-    # ==================================================================
-
-    def _verileri_yukle(self) -> None:
-        """Uygulama başında JSON'dan tüm yorumları belleğe yükler."""
-        # Güncelleme: .oku yerine .veriOku kullanıldı
-        ham = self.json.veriOku(self.YORUM_DOSYA)
-        for d in ham:
-            self.yorumlar.append(Yorum(
-                yorumId=d["yorumId"],
-                gonderild=d["gonderild"],
-                yazarld=d["yazarld"],
-                icerik=d["icerik"],
-                tarih=d["tarih"],
-            ))
-
-    def _yorumlari_kaydet(self) -> None:
-        """Bellekteki yorum listesini JSON dosyasına yazar."""
-        veri = []
-        for y in self.yorumlar:
-            veri.append({
+    def _depoyu_senkronize_et(self) -> None:
+        """
+        Bellekteki güncel Yorum nesne listesini, VeriDeposu'nun
+        beklediği ham sözlük (dict) formatına çevirerek merkezi depoyu günceller.
+        """
+        self.depo.tum_yorumlar = [
+            {
                 "yorumId": y.yorumId,
-                "gonderild": y.gonderild,
-                "yazarld": y.yazarld,
+                "gonderiId": y.gonderiId,
+                "yazarId": y.yazarId,
                 "icerik": y.icerik,
-                "tarih": y.tarih,
-            })
-        # Güncelleme: .yaz yerine .veriYaz kullanıldı
-        self.json.veriYaz(self.YORUM_DOSYA, veri)
+                "tarih": y.tarih
+            } for y in self.yorumlar
+        ]
 
-    def _yorum_bul(self, yorumId: int) -> Yorum | None:
-        """ID'ye göre yorum nesnesi döndürür; bulamazsa None."""
-        for y in self.yorumlar:
-            if y.yorumId == yorumId:
-                return y
-        return None
+    # =========================================================
+    # YORUM EKLEME
+    # =========================================================
 
-    def yorumEkle(self, gonderild: int, yazarld: int, icerik: str) -> dict:
-        """Bir gönderiye yeni bir yorum ekler."""
+    def yorumEkle(self, gonderiId: int, yazarId: int, icerik: str) -> dict:
+        """
+        Bir gönderinin altına yeni bir yorum nesnesi ekler ve kaydeder.
+        """
         if not icerik or not icerik.strip():
-            return {"basarili": False, "mesaj": "Yorum içeriği boş olamaz."}
+            return {
+                "basarili": False,
+                "mesaj": "Yorum boş olamaz."
+            }
 
+        # VeriDeposu'nun güvenli ve ardışık ID üretecini kullanıyoruz
         yeni_yorum = Yorum(
-            yorumId=_yeni_id(),
-            gonderild=gonderild,
-            yazarld=yazarld,
+            yorumId=self.depo.yeni_yorum_id(),
+            gonderiId=gonderiId,
+            yazarId=yazarId,
             icerik=icerik.strip(),
-            tarih=datetime.now().isoformat(),
+            tarih=datetime.now().isoformat()
         )
 
+        # Listeye doğrudan nesne olarak ekliyoruz
         self.yorumlar.append(yeni_yorum)
-        self._yorumlari_kaydet()
 
-        return {"basarili": True, "yorum": yeni_yorum}
+        # Depoyu senkronize edip diske yazıyoruz
+        self._depoyu_senkronize_et()
+        self.depo.yorumlari_kaydet()
 
-    def yorumSil(self, yorumId: int, aktif_kullanicild: int) -> dict:
-        """Belirtilen yorumu siler. Yalnızca yorumun sahibi silebilir."""
+        return {
+            "basarili": True,
+            "yorum": yeni_yorum
+        }
+
+    # =========================================================
+    # YORUM SİLME
+    # =========================================================
+
+    def yorumSil(self, yorumId: int, aktif_kullaniciId: int) -> dict:
+        """
+        Belirtilen yorumu sistemden siler. Sadece yorum sahibi silebilir.
+        """
         yorum = self._yorum_bul(yorumId)
 
         if yorum is None:
-            return {"basarili": False, "mesaj": "Yorum bulunamadı."}
+            return {
+                "basarili": False,
+                "mesaj": "Yorum bulunamadı."
+            }
 
-        if yorum.yazarld != aktif_kullanicild:
-            return {"basarili": False, "mesaj": "Bu yorumu silme yetkiniz yok."}
+        # Nesne yapısına geçtiğimiz için nokta (.) notasyonuyla erişiyoruz
+        if yorum.yazarId != aktif_kullaniciId:
+            return {
+                "basarili": False,
+                "mesaj": "Bu yorumu silme yetkiniz yok."
+            }
 
+        # Nesneyi listeden kaldırıyoruz
         self.yorumlar.remove(yorum)
-        self._yorumlari_kaydet()
 
-        return {"basarili": True, "mesaj": "Yorum başarıyla silindi."}
+        # Değişiklikleri depoya bildirip diske yazıyoruz
+        self._depoyu_senkronize_et()
+        self.depo.yorumlari_kaydet()
 
-    def gonderi_yorumlari_getir(self, gonderild: int) -> list[Yorum]:
-        """Bir gönderiye ait tüm yorumları eskiden yeniye sıralı döndürür."""
-        ilgili = [y for y in self.yorumlar if y.gonderild == gonderild]
-        ilgili.sort(key=lambda y: y.tarih)
-        return ilgili
+        return {
+            "basarili": True,
+            "mesaj": "Yorum silindi."
+        }
 
-    def kullanici_yorumlari_getir(self, yazarld: int) -> list[Yorum]:
-        """Bir kullanıcının yaptığı tüm yorumları döndürür."""
-        return [y for y in self.yorumlar if y.yazarld == yazarld]
+    # =========================================================
+    # YORUM GETİRME (SORGULAR)
+    # =========================================================
 
-    def gonderi_yorum_sayisi(self, gonderild: int) -> int:
-        """Bir gönderinin toplam yorum sayısını döndürür."""
-        return len([y for y in self.yorumlar if y.gonderild == gonderild])
+    def gonderi_yorumlari_getir(self, gonderiId: int) -> list[Yorum]:
+        """
+        Belirli bir gönderiye ait tüm yorum nesnelerini getirir.
+        """
+        return [
+            y for y in self.yorumlar
+            if y.gonderiId == gonderiId
+        ]
 
-    def gonderi_silinince_temizle(self, gonderild: int) -> None:
-        """Bir gönderi silindiğinde ona ait tüm yorumları temizler."""
-        self.yorumlar = [y for y in self.yorumlar if y.gonderild != gonderild]
-        self._yorumlari_kaydet()
+    def kullanici_yorumlari_getir(self, yazarId: int) -> list[Yorum]:
+        """
+        Belirli bir kullanıcının yazdığı tüm yorum nesnelerini filtreler.
+        """
+        return [
+            y for y in self.yorumlar
+            if y.yazarId == yazarId
+        ]
+
+    def gonderi_yorum_sayisi(self, gonderiId: int) -> int:
+        """
+        Bir gönderiye ait toplam yorum sayısını döndürür.
+        """
+        return len([
+            y for y in self.yorumlar
+            if y.gonderiId == gonderiId
+        ])
+
+    # =========================================================
+    # PRIVATE YARDIMCI METOTLAR
+    # =========================================================
+
+    def _yorum_bul(self, yorumId: int) -> Yorum | None:
+        """
+        Bellekteki Yorum nesneleri arasında ID eşleşmesi arar.
+        """
+        for yorum in self.yorumlar:
+            if yorum.yorumId == yorumId:
+                return yorum
+
+        return None
+
+    def gonderi_silinince_temizle(self, gonderiId: int) -> None:
+        """
+        Gönderi silindiğinde ona bağlı tüm yorum nesnelerini toplu temizler.
+        GonderiYonetici tarafından tetiklenir.
+        """
+        # İlgili gönderiye ait olmayan yorumları tutarak listeyi güncelliyoruz
+        self.yorumlar = [
+            y for y in self.yorumlar
+            if y.gonderiId != gonderiId
+        ]
+
+        # Temizlik sonrası depoyu senkronize edip kaydediyoruz
+        self._depoyu_senkronize_et()
+        self.depo.yorumlari_kaydet()
