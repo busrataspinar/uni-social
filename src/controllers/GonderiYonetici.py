@@ -8,30 +8,18 @@ class GonderiYonetici:
     """
     Gönderi iş mantığını yöneten Controller sınıfı.
     Veriler bellekte liste olarak tutulur; her işlemde
-    JsonIsleyicisi aracılığıyla gonderiler.json'a yazılır.
+    JsonIsleyicisi aracılığıyla veritabanına yazılır.
     """
 
     def __init__(self):
         self._json = JsonIsleyicisi()
-        # JSON'dan gelen dict listesini Gonderi nesnelerine çevir
+        # Güncelleme: .oku yerine .veriOku metodu kullanıldı
         self.gonderiler: list[Gonderi] = self._json_to_gonderiler(
-            self._json.oku("gonderiler")
+            self._json.veriOku("gonderiler")
         )
 
-    # UC6 – Gönderi Paylaş
-
     def gonderi_olustur(self, yazarld: int, icerik: str) -> dict:
-        """
-        Yeni bir gönderi oluşturur.
-
-        Parametreler:
-            yazarld : Gönderiyi paylaşan kullanıcının ID'si (int)
-            icerik  : Gönderi metni (str)
-
-        Dönüş:
-            {"basarili": True,  "gonderi": Gonderi}
-            {"basarili": False, "hata": str}
-        """
+        """Yeni bir gönderi oluşturur."""
         if not icerik or not icerik.strip():
             return {"basarili": False, "hata": "Gönderi içeriği boş olamaz."}
 
@@ -49,7 +37,6 @@ class GonderiYonetici:
 
         return {"basarili": True, "gonderi": gonderi}
 
-    # UC7 – Gönderi Sil
     def gonderi_sil(
         self,
         gonderild: int,
@@ -60,16 +47,6 @@ class GonderiYonetici:
         """
         Bir gönderiyi siler. Yalnızca gönderinin sahibi silebilir.
         Silinince bağlı yorumlar ve beğeniler de temizlenir.
-
-        Parametreler:
-            gonderild       : Silinecek gönderinin ID'si (int)
-            yazarld         : İşlemi yapan kullanıcının ID'si (int)
-            yorum_yonetici  : YorumYonetici örneği (opsiyonel)
-            begeni_yonetici : BegeniYonetici örneği (opsiyonel)
-
-        Dönüş:
-            {"basarili": True}
-            {"basarili": False, "hata": str}
         """
         gonderi = self._gonderi_bul(gonderild)
         if gonderi is None:
@@ -81,31 +58,17 @@ class GonderiYonetici:
         self.gonderiler.remove(gonderi)
         self._kaydet()
 
-        # Bağlı yorumları temizle
+        # Güncelleme: Diğer sınıfların temizleme metot isimleri (gonderi_silinince_temizle) ile eşitlendi
         if yorum_yonetici is not None:
-            yorum_yonetici.gonderi_silinince_yorumlari_temizle(gonderild)
+            yorum_yonetici.gonderi_silinince_temizle(gonderild)
 
-        # Bağlı beğenileri temizle
         if begeni_yonetici is not None:
-            begeni_yonetici.gonderi_silinince_begenileri_temizle(gonderild)
+            begeni_yonetici.gonderi_silinince_temizle(gonderild)
 
         return {"basarili": True}
 
-    # UC9 – Gönderi Düzenle # UC9 – Gönderi Düzenle
     def gonderi_duzenle(self, gonderild: int, yazarld: int, yeni_icerik: str) -> dict:
-        """
-        Mevcut bir gönderinin içeriğini günceller.
-        Yalnızca gönderinin sahibi düzenleyebilir.
-
-        Parametreler:
-            gonderild   : Düzenlenecek gönderinin ID'si (int)
-            yazarld     : İşlemi yapan kullanıcının ID'si (int)
-            yeni_icerik : Güncellenmiş içerik (str)
-
-        Dönüş:
-            {"basarili": True,  "gonderi": Gonderi}
-            {"basarili": False, "hata": str}
-        """
+        """Mevcut bir gönderinin içeriğini günceller."""
         if not yeni_icerik or not yeni_icerik.strip():
             return {"basarili": False, "hata": "Güncellenmiş içerik boş olamaz."}
 
@@ -117,14 +80,12 @@ class GonderiYonetici:
             return {"basarili": False, "hata": "Bu gönderiyi düzenleme yetkiniz yok."}
 
         gonderi.icerik = yeni_icerik.strip()
-        gonderi.tarih = datetime.now()   # düzenleme zamanı güncellenir
+        gonderi.tarih = datetime.now()
 
         self._kaydet()
 
         return {"basarili": True, "gonderi": gonderi}
 
-
-    # Yardımcı – Sorgulama
     def tum_gonderileri_getir(self) -> list:
         """Tüm gönderileri döndürür."""
         return list(self.gonderiler)
@@ -137,9 +98,6 @@ class GonderiYonetici:
         """ID'ye göre tekil gönderi döndürür; bulunamazsa None."""
         return self._gonderi_bul(gonderild)
 
-    # ------------------------------------------------------------------
-    # İç yardımcı metotlar
-    # ------------------------------------------------------------------
     def _gonderi_bul(self, gonderild: int):
         for g in self.gonderiler:
             if g.gonderild == gonderild:
@@ -147,7 +105,7 @@ class GonderiYonetici:
         return None
 
     def _yeni_id_uret(self) -> int:
-        """8 haneli benzersiz rastgele ID üretir (JSON yapısıyla uyumlu)."""
+        """8 haneli benzersiz rastgele ID üretir."""
         mevcut_idler = {g.gonderild for g in self.gonderiler}
         while True:
             yeni = random.randint(10000000, 99999999)
@@ -182,6 +140,5 @@ class GonderiYonetici:
             }
             for g in self.gonderiler
         ]
-        self._json.yaz("gonderiler", veri)
-
-
+        # Güncelleme: .yaz yerine .veriYaz metodu kullanıldı
+        self._json.veriYaz("gonderiler", veri)
