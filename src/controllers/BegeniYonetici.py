@@ -1,125 +1,173 @@
-import random
+
 from datetime import datetime
-
 from models.Begeni import Begeni
-from utils.JsonIsleyicisi import JsonIsleyicisi
-
-
-def _yeni_id() -> int:
-    """8 haneli rastgele tam sayı üretir."""
-    return random.randint(10_000_000, 99_999_999)
+from data.VeriDeposu import VeriDeposu
 
 
 class BegeniYonetici:
     """
-    Gönderilere yapılan beğenilerin eklenmesi ve kaldırılmasını
-    yöneten Controller sınıfı.
+    Gönderi beğeni işlemlerini yöneten Controller sınıfı.
+
+    Tüm işlemler VeriDeposu Singleton sınıfı üzerinden ve
+    saf OOP (Nesne) modelleriyle yönetilir.
     """
 
-    # Güncelleme: Dosya yolu ve uzantı JsonIsleyicisi tarafından yönetildiği için sadece ad bırakıldı.
-    BEGENI_DOSYA = "begeniler"
+    def __init__(self):
+        """
+        Veri deposundaki ham beğeni sözlüklerini Begeni nesnelerine
+        dönüştürerek belleğe bağlar.
+        """
+        self.depo = VeriDeposu()
 
-    def __init__(self) -> None:
-        self.json = JsonIsleyicisi()
-        self.begeniler: list[Begeni] = []
-        self._verileri_yukle()
+        # Depodaki ham dict listesini Begeni nesne listesine çeviriyoruz
+        self.begeniler: list[Begeni] = [
+            Begeni(
+                begeniId=b["begeniId"],
+                gonderiId=b["gonderiId"],
+                kullaniciId=b["kullaniciId"],
+                tarih=b["tarih"]
+            ) for b in self.depo.tum_begeniler
+        ]
 
-    # ==================================================================
-    # PRIVATE – Yükleme / Kaydetme
-    # ==================================================================
+    def _depoyu_senkronize_et(self) -> None:
+        """
+        Bellekteki güncel Begeni nesne listesini, VeriDeposu'nun
+        beklediği ham sözlük (dict) formatına çevirerek merkezi depoyu günceller.
+        """
+        self.depo.tum_begeniler = [
+            {
+                "begeniId": b.begeniId,
+                "gonderiId": b.gonderiId,
+                "kullaniciId": b.kullaniciId,
+                "tarih": b.tarih
+            } for b in self.begeniler
+        ]
 
-    def _verileri_yukle(self) -> None:
-        """Uygulama başında JSON'dan tüm beğenileri belleğe yükler."""
-        # Güncelleme: .oku yerine .veriOku kullanıldı
-        ham = self.json.veriOku(self.BEGENI_DOSYA)
-        for d in ham:
-            self.begeniler.append(Begeni(
-                begenild    = d["begenild"],
-                gonderild   = d["gonderild"],
-                kullanicild = d["kullanicild"],
-                tarih       = d["tarih"],
-            ))
+    # =========================================================
+    # BEĞENİ EKLE
+    # =========================================================
 
-    def _begenileri_kaydet(self) -> None:
-        """Bellekteki beğeni listesini JSON dosyasına yazar."""
-        veri = []
-        for b in self.begeniler:
-            veri.append({
-                "begenild"    : b.begenild,
-                "gonderild"   : b.gonderild,
-                "kullanicild" : b.kullanicild,
-                "tarih"       : b.tarih,
-            })
-        # Güncelleme: .yaz yerine .veriYaz kullanıldı
-        self.json.veriYaz(self.BEGENI_DOSYA, veri)
+    def begeniEkle(self, gonderiId: int, kullaniciId: int) -> dict:
+        """
+        Kullanıcı gönderiyi daha önce beğenmemişse yeni bir beğeni nesnesi ekler.
+        """
+        mevcut = self._begeni_bul(gonderiId, kullaniciId)
 
-    def _begeni_bul(self, gonderild: int, kullanicild: int) -> Begeni | None:
-        """Kullanıcının belirli bir gönderiyi beğenip beğenmediğini kontrol eder."""
-        for b in self.begeniler:
-            if b.gonderild == gonderild and b.kullanicild == kullanicild:
-                return b
-        return None
-
-    def begeniEkle(self, gonderild: int, kullanicild: int) -> dict:
-        """Bir gönderiye beğeni ekler."""
-        mevcut = self._begeni_bul(gonderild, kullanicild)
         if mevcut:
-            sayi = self.begeni_sayisi_getir(gonderild)
             return {
                 "basarili": False,
-                "mesaj": "Bu gönderiyi zaten beğendiniz.",
-                "begeni_sayisi": sayi,
+                "mesaj": "Bu gönderi zaten beğenildi."
             }
 
+        # VeriDeposu'nun güvenli ve ardışık ID üretecini kullanıyoruz
         yeni_begeni = Begeni(
-            begenild    = _yeni_id(),
-            gonderild   = gonderild,
-            kullanicild = kullanicild,
-            tarih       = datetime.now().isoformat(),
+            begeniId=self.depo.yeni_begeni_id(),
+            gonderiId=gonderiId,
+            kullaniciId=kullaniciId,
+            tarih=datetime.now().isoformat()
         )
 
+        # Listeye doğrudan nesne olarak ekliyoruz
         self.begeniler.append(yeni_begeni)
-        self._begenileri_kaydet()
 
-        sayi = self.begeni_sayisi_getir(gonderild)
-        return {"basarili": True, "begeni": yeni_begeni, "begeni_sayisi": sayi}
+        # Depoyu senkronize edip diske yazıyoruz
+        self._depoyu_senkronize_et()
+        self.depo.begenileri_kaydet()
 
-    def begeniKaldir(self, gonderild: int, kullanicild: int) -> dict:
-        """Kullanıcının bir gönderiye yaptığı beğeniyi kaldırır."""
-        mevcut = self._begeni_bul(gonderild, kullanicild)
+        return {
+            "basarili": True,
+            "begeni": yeni_begeni
+        }
 
-        if not mevcut:
-            return {"basarili": False, "mesaj": "Bu gönderiyi beğenmediniz."}
+    # =========================================================
+    # BEĞENİ KALDIR
+    # =========================================================
 
+    def begeniKaldir(self, gonderiId: int, kullaniciId: int) -> dict:
+        """
+        Kullanıcının ilgili gönderideki beğeni nesnesini siler.
+        """
+        mevcut = self._begeni_bul(gonderiId, kullaniciId)
+
+        if mevcut is None:
+            return {
+                "basarili": False,
+                "mesaj": "Beğeni bulunamadı."
+            }
+
+        # Bulunan nesneyi listeden güvenle siliyoruz
         self.begeniler.remove(mevcut)
-        self._begenileri_kaydet()
 
-        sayi = self.begeni_sayisi_getir(gonderild)
-        return {"basarili": True, "mesaj": "Beğeni kaldırıldı.", "begeni_sayisi": sayi}
+        # Değişiklikleri depoya bildirip diske yazıyoruz
+        self._depoyu_senkronize_et()
+        self.depo.begenileri_kaydet()
 
-    def begeniToggle(self, gonderild: int, kullanicild: int) -> dict:
-        """Kullanıcı beğendiyse kaldırır, beğenmediyse ekler."""
-        mevcut = self._begeni_bul(gonderild, kullanicild)
+        return {
+            "basarili": True,
+            "mesaj": "Beğeni kaldırıldı."
+        }
+
+    # =========================================================
+    # TOGGLE
+    # =========================================================
+
+    def begeniToggle(self, gonderiId: int, kullaniciId: int) -> dict:
+        """
+        Gönderi beğenilmişse beğeniyi kaldırır, beğenilmemişse beğeni ekler.
+        """
+        mevcut = self._begeni_bul(gonderiId, kullaniciId)
+
         if mevcut:
-            return self.begeniKaldir(gonderild, kullanicild) | {"islem": "kaldirildi"}
-        else:
-            sonuc = self.begeniEkle(gonderild, kullanicild)
-            sonuc["islem"] = "eklendi"
-            return sonuc
+            return self.begeniKaldir(gonderiId, kullaniciId)
 
-    def begeni_sayisi_getir(self, gonderild: int) -> int:
-        """Bir gönderinin toplam beğeni sayısını döndürür."""
-        return len([b for b in self.begeniler if b.gonderild == gonderild])
+        return self.begeniEkle(gonderiId, kullaniciId)
 
-    def kullanici_begendi_mi(self, gonderild: int, kullanicild: int) -> bool:
-        """Kullanıcının ilgili gönderiyi beğenip beğenmediğini döndürür."""
-        return self._begeni_bul(gonderild, kullanicild) is not None
+    # =========================================================
+    # SORGULAR (SAYI & KONTROL)
+    # =========================================================
 
-    def kullanici_begeni_gecmisi(self, kullanicild: int) -> list[Begeni]:
-        """Bir kullanıcının beğendiği tüm gönderilerin beğeni kayıtlarını döndürür."""
-        return [b for b in self.begeniler if b.kullanicild == kullanicild]
+    def begeni_sayisi_getir(self, gonderiId: int) -> int:
+        """
+        Bir gönderinin toplam beğeni sayısını döndürür.
+        """
+        return len([
+            b for b in self.begeniler
+            if b.gonderiId == gonderiId
+        ])
 
-    def gonderi_silinince_temizle(self, gonderild: int) -> None:
-        """Bir gönderi silindiğinde ona ait tüm beğenileri temizler."""
-        self.begeniler = [b for b in self.begeniler if b.gonderild != gonderild]
-        self._begenileri_kaydet()
+    def kullanici_begendi_mi(self, gonderiId: int, kullaniciId: int) -> bool:
+        """
+        Bir kullanıcının gönderiyi beğenip beğenmediğini boolean olarak döner.
+        Arayüz buton renkleri için kullanışlıdır.
+        """
+        return self._begeni_bul(gonderiId, kullaniciId) is not None
+
+    # =========================================================
+    # PRIVATE YARDIMCI METOTLAR
+    # =========================================================
+
+    def _begeni_bul(self, gonderiId: int, kullaniciId: int) -> Begeni | None:
+        """
+        Bellekteki Begeni nesneleri arasında ID eşleşmesi arar.
+        """
+        for begeni in self.begeniler:
+            # Nesne olduğu için nokta (.) notasyonu ile erişiyoruz
+            if begeni.gonderiId == gonderiId and begeni.kullaniciId == kullaniciId:
+                return begeni
+
+        return None
+
+    def gonderi_silinince_temizle(self, gonderiId: int) -> None:
+        """
+        Bir gönderi silindiğinde ona bağlı tüm beğenileri temizler.
+        GonderiYonetici tarafından tetiklenir.
+        """
+        # İlgili gönderiye ait olmayan beğenileri tutarak listeyi temizliyoruz
+        self.begeniler = [
+            b for b in self.begeniler
+            if b.gonderiId != gonderiId
+        ]
+
+        # Temizlik sonrası depoyu güncelleyip kaydediyoruz
+        self._depoyu_senkronize_et()
+        self.depo.begenileri_kaydet()
