@@ -9,6 +9,8 @@ class JsonIsleyicisi:
     Facade tasarım deseni ile alt seviye dosya işlemlerini gizler.
     """
 
+
+
     def __init__(self, veri_dizini="data"):
         """
         JsonIsleyicisi nesnesini başlatır.
