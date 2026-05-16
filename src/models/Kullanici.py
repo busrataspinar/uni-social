@@ -3,7 +3,7 @@ class Kullanici:
     Sistemdeki öğrencilerin dijital kimlik bilgilerini ve sosyal ağlarını tutar.
     """
 
-    def __init__(self, kullanicild, kullaniciAdi, email, sifreHash):
+    def __init__(self, kullanicild, kullaniciAdi, email, sifreHash, uni=""):
         """
         Kullanici nesnesini başlatır.
 
@@ -12,11 +12,13 @@ class Kullanici:
             kullaniciAdi (str): Profilde görünen ve aramalarda kullanılan kullanıcı ismi.
             email (str): Giriş için kullanılan .edu uzantılı resmi e-posta adresi.
             sifreHash (str): Şifrenin güvenlik amacıyla hashlenmiş hali.
+            uni (str): Kullanıcının kayıtlı olduğu üniversite adı. Varsayılan boş string.
         """
         self.kullanicild = kullanicild
         self.kullaniciAdi = kullaniciAdi
         self.email = email
         self.sifreHash = sifreHash
+        self.uni = uni
         self.takipEdilenler = []
 
     def to_dict(self):
@@ -31,6 +33,7 @@ class Kullanici:
             "kullaniciAdi": self.kullaniciAdi,
             "email": self.email,
             "sifreHash": self.sifreHash,
+            "uni": self.uni,
             "takipEdilenler": self.takipEdilenler
         }
 
@@ -49,7 +52,8 @@ class Kullanici:
             kullanicild=veri["kullanicild"],
             kullaniciAdi=veri["kullaniciAdi"],
             email=veri["email"],
-            sifreHash=veri["sifreHash"]
+            sifreHash=veri["sifreHash"],
+            uni=veri.get("uni", "")
         )
         k.takipEdilenler = veri.get("takipEdilenler", [])
         return k
