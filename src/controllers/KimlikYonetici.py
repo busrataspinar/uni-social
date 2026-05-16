@@ -26,7 +26,7 @@ class KimlikYonetici:
 
     def __init__(self) -> None:
         self._json = JsonIsleyicisi()
-        self._kullanicilar: list[dict] = self._json.verileri_yukle(self.KULLANICI_DOSYA)
+        self._kullanicilar: list[dict] = self._json.veriOku(self.KULLANICI_DOSYA)
         self._aktif_oturum: Oturum | None = None
 
     def kayit_ol(self, kullanici_adi: str, email: str, sifre: str, uni: str) -> dict:
@@ -189,4 +189,4 @@ class KimlikYonetici:
         }
 
     def _kaydet(self) -> None:
-        self._json.verileri_kaydet(self.KULLANICI_DOSYA, self._kullanicilar)
+        self._json.veriYaz(self.KULLANICI_DOSYA, self._kullanicilar)
