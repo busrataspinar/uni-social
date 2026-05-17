@@ -3,7 +3,7 @@
         "kullaniciId": 1,
         "kullaniciAdi": "busra_taspinar",
         "email": "24100011057@erbakan.edu.tr",
-        "sifreHash": "",
+        "sifreHash": "scrypt:32768:8:1$iAj73matlWCvq49l$c63ff3343edd434445e60991b295b83ca3a0cc7c5310539f68ad3e29687b93dc187bb682c23abaf9cf6cb1488a6e411212703db14a97be978cd8311f9e892d54",
         "uni": "Bilgisayar Muhendisligi",
         "takipEdilenler": []
     },
@@ -11,7 +11,7 @@
         "kullaniciId": 2,
         "kullaniciAdi": "mehmet_halil_mugulday",
         "email": "25100011412@erbakan.edu.tr",
-        "sifreHash": "",
+        "sifreHash": "scrypt:32768:8:1$iAj73matlWCvq49l$c63ff3343edd434445e60991b295b83ca3a0cc7c5310539f68ad3e29687b93dc187bb682c23abaf9cf6cb1488a6e411212703db14a97be978cd8311f9e892d54",
         "uni": "Bilgisayar Muhendisligi",
         "takipEdilenler": []
     },
@@ -19,7 +19,7 @@
         "kullaniciId": 3,
         "kullaniciAdi": "sudem_arslan",
         "email": "24100011061@erbakan.edu.tr",
-        "sifreHash": "",
+        "sifreHash": "scrypt:32768:8:1$iAj73matlWCvq49l$c63ff3343edd434445e60991b295b83ca3a0cc7c5310539f68ad3e29687b93dc187bb682c23abaf9cf6cb1488a6e411212703db14a97be978cd8311f9e892d54",
         "uni": "Bilgisayar Muhendisligi",
         "takipEdilenler": []
     },
@@ -27,7 +27,7 @@
         "kullaniciId": 4,
         "kullaniciAdi": "yagmur_nisa_suslu",
         "email": "24100011049@erbakan.edu.tr",
-        "sifreHash": "",
+        "sifreHash": "scrypt:32768:8:1$iAj73matlWCvq49l$c63ff3343edd434445e60991b295b83ca3a0cc7c5310539f68ad3e29687b93dc187bb682c23abaf9cf6cb1488a6e411212703db14a97be978cd8311f9e892d54",
         "uni": "Bilgisayar Muhendisligi",
         "takipEdilenler": []
     },
@@ -35,7 +35,7 @@
         "kullaniciId": 5,
         "kullaniciAdi": "emine_sude_alisarli",
         "email": "23100011035@erbakan.edu.tr",
-        "sifreHash": "",
+        "sifreHash": "scrypt:32768:8:1$iAj73matlWCvq49l$c63ff3343edd434445e60991b295b83ca3a0cc7c5310539f68ad3e29687b93dc187bb682c23abaf9cf6cb1488a6e411212703db14a97be978cd8311f9e892d54",
         "uni": "Bilgisayar Muhendisligi",
         "takipEdilenler": []
     }
