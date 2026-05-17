@@ -1,11 +1,10 @@
-from src.utils.VeriDeposu import isleyici, tum_kullanicilar, tum_gonderiler, tum_takipler
+from utils.VeriDeposu import VeriDeposu
 
 class FeedYonetici:
     def __init__(self):
-        # JSON verileri ve veri işleyici yüklenir
-        self.isleyici     = isleyici
-        self.kullanicilar = tum_kullanicilar or []
-        self.gonderiler   = tum_gonderiler or []
+        self.depo = VeriDeposu()
+        self.kullanicilar = self.depo.tum_kullanicilar
+        self.gonderiler = self.depo.tum_gonderiler
 
     # ---------------------------------------------------------
     # YARDIMCI FONKSİYON
@@ -44,7 +43,7 @@ class FeedYonetici:
 
         if hedef_kullanicild not in aktif_kullanici["takipEdilenler"]:
             aktif_kullanici["takipEdilenler"].append(hedef_kullanicild)
-            self.isleyici.verileri_kaydet("kullanicilar", self.kullanicilar)
+            self.depo.kullanicilari_kaydet()
             return True
 
         return False
@@ -66,54 +65,71 @@ class FeedYonetici:
 
             if takipten_cikilacakld in takip_listesi:
                 takip_listesi.remove(takipten_cikilacakld)
-                self.isleyici.verileri_kaydet("kullanicilar", self.kullanicilar)
+                self.depo.kullanicilari_kaydet()
                 return True
 
         return False
     # ---------------------------------------------------------
     # UC13: ANA SAYFA AKIŞI (FEED)
     # ---------------------------------------------------------
-    def ana_akisi_olustur(self, aktif_kullanicild):
+    def ana_akisi_olustur(self, aktif_kullanicild, yorum_yonetici, begeni_yonetici):
         """
-        Amaç:Kullanıcının ana sayfa akışını oluşturmak.
-        Detay:- Kullanıcının takip ettiği kişiler alınır
-            - Bu kişilere ait gönderiler filtrelenir
-            - Gönderiler tarihe göre (yeniden eskiye) sıralanır
-        Parametre:aktif_kullanicild: Akışı oluşturulacak kullanıcı
-        Dönüş:dict: Mesaj ve gönderi listesi içerir
+        Amaç: Kullanıcının takip ettiği kişilerin gönderilerini beğeni ve yorum sayılarıyla
+              birlikte, tarihe göre sıralı (yeniden eskiye) şekilde getirmek.
         """
+        # Kullanıcı kontrolü
         aktif_kullanici = self.kullanici_bul(aktif_kullanicild)
-
         if not aktif_kullanici:
             return {"mesaj": "Kullanıcı bulunamadı.", "gonderiler": []}
 
+        #Takip listesi kontrolü
         takip_listesi = aktif_kullanici.get("takipEdilenler", [])
-
         if not takip_listesi:
             return {"mesaj": "Akış boş. Takip ederek akışınızı canlandırabilirsiniz.", "gonderiler": []}
 
-        akistan_gelenler = [
+        #Sadece takip edilen kişilerin gönderilerini filtrele
+        filtrelenmiş_gonderiler = [
             g for g in self.gonderiler or []
             if g.get("yazarld") in takip_listesi
         ]
 
-        if not akistan_gelenler:
+        if not filtrelenmiş_gonderiler:
             return {"mesaj": "Takip ettikleriniz henüz gönderi paylaşmadı.", "gonderiler": []}
 
-        akistan_gelenler.sort(key=lambda x: x.get("tarih", ""), reverse=True)
+
+        filtrelenmiş_gonderiler.sort(key=lambda x: x.get("tarih", ""), reverse=True)
+
+
+        akistan_gelenler = []
+        for g in filtrelenmiş_gonderiler:
+            gonderi_id = g.get("gonderild")
+
+            akistan_gelenler.append({
+                "gonderi": g,
+                "begeni_sayisi": begeni_yonetici.begeni_sayisi_getir(gonderi_id) if begeni_yonetici else 0,
+                "yorum_sayisi": yorum_yonetici.gonderi_yorum_sayisi(gonderi_id) if yorum_yonetici else 0
+            })
 
         return {"mesaj": "Akış güncellendi.", "gonderiler": akistan_gelenler}
-    def akisi_yenile(self, aktif_kullanicild):
-        """
-        Amaç:Güncel verileri JSON'dan tekrar yükleyerek akışı yenilemek.
-        Detay:Kullanıcı ve gönderi verileri yeniden okunur ve akış tekrar oluşturulur.
-        Parametre:aktif_kullanicild: Akışı yenilenecek kullanıcı
-        Dönüş:dict: Güncellenmiş akış verisi
-        """
-        self.kullanicilar = self.isleyici.verileri_yukle("kullanicilar") or []
-        self.gonderiler = self.isleyici.verileri_yukle("gonderiler") or []
 
-        return self.ana_akisi_olustur(aktif_kullanicild)
+    def akisi_yenile(self, aktif_kullanicild, yorum_yonetici, begeni_yonetici):
+        """
+        Amaç: Kullanıcının akışını güncellemek.
+        Detay: VeriDeposu'ndan kullanıcı ve gönderi listeleri yeniden yüklenir,
+               beğeni ve yorum yöneticileriyle birlikte ana akış güncellenir.
+        Parametreler:
+            aktif_kullanicild (int) – Akışı yenilenecek kullanıcı ID'si
+            yorum_yonetici – Güncel yorum sayılarını almak için yorum yönetim nesnesi
+            begeni_yonetici – Güncel beğeni sayılarını almak için beğeni yönetim nesnesi
+        Dönüş: dict – Mesaj ve güncel, zenginleştirilmiş gönderi listesi
+        """
+
+        self.kullanicilar = self.depo.tum_kullanicilar
+        self.gonderiler = self.depo.tum_gonderiler
+
+        # Yeni eklenen parametreleri ana_akisi_olustur'a güvenli bir şekilde gonder
+        return self.ana_akisi_olustur(aktif_kullanicild, yorum_yonetici, begeni_yonetici)
+
     # ---------------------------------------------------------
     # UC14 & UC15: ARAMA VE FİLTRELEME
     # ---------------------------------------------------------
