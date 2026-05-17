@@ -15,7 +15,32 @@
         "gonderild": 3,
         "yazarld": 3,
         "icerik": "Final sınavları yaklaşıyor, herkes başarılar!",
+        "tarih": "2026-05-03T09:00:00"[
+    {
+        "gonderiId": 1,
+        "yazarId": 1,
+        "icerik": "Yazılım Mühendisliği dersi için harika bir proje geliştiriyoruz!",
+        "tarih": "2026-05-01T10:30:00"
+    },
+    {
+        "gonderiId": 2,
+        "yazarId": 2,
+        "icerik": "Bugün kütüphanede çalışmak çok verimli geçti.",
+        "tarih": "2026-05-02T14:15:00"
+    },
+    {
+        "gonderiId": 3,
+        "yazarId": 3,
+        "icerik": "Final sınavları yaklaşıyor, herkes başarılar!",
         "tarih": "2026-05-03T09:00:00"
+    },
+    {
+        "gonderiId": 4,
+        "yazarId": 1,
+        "icerik": "UniSocial platformu gerçekten kullanışlı olacak.",
+        "tarih": "2026-05-04T16:45:00"
+    }
+]
     },
     {
         "gonderild": 4,
