@@ -1,17 +1,19 @@
+# Feed.py
+
 class Feed:
     """
     Kullanıcıya özel hazırlanan içerik akışını temsil eder.
     Takip edilen kişilerin gönderilerinden oluşan listeyi barındırır.
     """
 
-    def __init__(self, kullanicild):
+    def __init__(self, kullaniciId):
         """
         Feed nesnesini başlatır.
 
         Args:
-            kullanicild (int): Bu akışın ait olduğu öğrencinin ID'si.
+            kullaniciId (int): Bu akışın ait olduğu öğrencinin ID'si.
         """
-        self.kullanicild = kullanicild
+        self.kullaniciId = kullaniciId
         self.akisGonderileri = []
 
     def gonderi_ekle(self, gonderi):
@@ -26,12 +28,20 @@ class Feed:
     def to_dict(self):
         """
         Feed nesnesini JSON'a yazılabilir sözlük formatına dönüştürür.
-        İçindeki tüm Gonderi nesneleri de sözlüğe çevrilir.
 
         Returns:
             dict: Feed verilerini içeren sözlük.
         """
         return {
-            "kullanicild": self.kullanicild,
+            "kullaniciId": self.kullaniciId,
             "akisGonderileri": [g.to_dict() for g in self.akisGonderileri]
         }
+
+    @classmethod
+    def from_dict(cls, veri):
+        """
+        Sözlük verisinden Feed nesnesi oluşturur.
+        """
+        feed = cls(veri["kullaniciId"])
+        feed.akisGonderileri = veri.get("akisGonderileri", [])
+        return feed

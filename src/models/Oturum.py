@@ -1,3 +1,5 @@
+# Oturum.py
+
 from datetime import datetime
 
 
@@ -6,16 +8,16 @@ class Oturum:
     Kullanıcının sisteme giriş yaptıktan sonraki aktiflik sürecini yönetir.
     """
 
-    def __init__(self, aktifKullanicild, baslangicZamani, token):
+    def __init__(self, aktifKullaniciId, baslangicZamani, token):
         """
         Oturum nesnesini başlatır.
 
         Args:
-            aktifKullanicild (int): Şu an uygulamayı kullanan kullanıcının ID'si.
-            baslangicZamani (datetime): Oturumun başladığı an; süre kontrolü için kullanılır.
-            token (str): Şifre girmeden içeride kalmayı sağlayan güvenli erişim anahtarı.
+            aktifKullaniciId (int): Şu an uygulamayı kullanan kullanıcının ID'si.
+            baslangicZamani (datetime): Oturumun başladığı an.
+            token (str): Güvenli erişim anahtarı.
         """
-        self.aktifKullanicild = aktifKullanicild
+        self.aktifKullaniciId = aktifKullaniciId
         self.baslangicZamani = baslangicZamani
         self.token = token
 
@@ -24,13 +26,34 @@ class Oturum:
         Token varlığını ve oturumun geçerlilik süresini kontrol eder.
 
         Args:
-            sure_dakika (int): Oturumun geçerli sayılacağı maksimum süre (dakika).
-                               Varsayılan değer 60 dakikadır.
+            sure_dakika (int): Oturumun geçerli sayılacağı maksimum süre.
 
         Returns:
-            bool: Oturum geçerliyse True, süresi dolmuşsa veya token yoksa False.
+            bool: Oturum geçerliyse True, aksi halde False.
         """
         if not self.token:
             return False
+
         gecen_sure = datetime.now() - self.baslangicZamani
         return gecen_sure.total_seconds() < sure_dakika * 60
+
+    def to_dict(self):
+        """
+        Oturum nesnesini sözlük formatına dönüştürür.
+        """
+        return {
+            "aktifKullaniciId": self.aktifKullaniciId,
+            "baslangicZamani": self.baslangicZamani.isoformat(),
+            "token": self.token
+        }
+
+    @classmethod
+    def from_dict(cls, veri):
+        """
+        Sözlük verisinden Oturum nesnesi oluşturur.
+        """
+        return cls(
+            aktifKullaniciId=veri["aktifKullaniciId"],
+            baslangicZamani=datetime.fromisoformat(veri["baslangicZamani"]),
+            token=veri["token"]
+        )
