@@ -1,29 +1,29 @@
 [
     {
         "yorumId": 1,
-        "gonderild": 1,
-        "yazarld": 2,
+        "gonderiId": 1,
+        "yazarId": 2,
         "icerik": "Çok başarılı bir proje olacak, tebrikler!",
         "tarih": "2026-05-01T11:00:00"
     },
     {
         "yorumId": 2,
-        "gonderild": 1,
-        "yazarld": 3,
+        "gonderiId": 1,
+        "yazarId": 3,
         "icerik": "Ben de aynı fikirdeyim, harika görünüyor.",
         "tarih": "2026-05-01T11:30:00"
     },
     {
         "yorumId": 3,
-        "gonderild": 2,
-        "yazarld": 1,
+        "gonderiId": 2,
+        "yazarId": 1,
         "icerik": "Kütüphanenin sessiz bölümü gerçekten verimli.",
         "tarih": "2026-05-02T15:00:00"
     },
     {
         "yorumId": 4,
-        "gonderild": 3,
-        "yazarld": 2,
+        "gonderiId": 3,
+        "yazarId": 2,
         "icerik": "Teşekkürler, sana da başarılar!",
         "tarih": "2026-05-03T09:45:00"
     }

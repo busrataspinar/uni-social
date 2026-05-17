@@ -1,23 +1,42 @@
 [
     {
-        "kullanicild": 1,
-        "kullaniciAdi": "mehmet_halil",
-        "email": "mehmet@ogr.edu.tr",
-        "sifreHash": "pbkdf2:sha256:örnek_hash_buraya",
-        "takipEdilenler": [2, 3]
+        "kullaniciId": 1,
+        "kullaniciAdi": "busra_taspinar",
+        "email": "24100011057@erbakan.edu.tr",
+        "sifreHash": "",
+        "uni": "Bilgisayar Muhendisligi",
+        "takipEdilenler": []
     },
     {
-        "kullanicild": 2,
-        "kullaniciAdi": "yagmur_nisa",
-        "email": "yagmur@ogr.edu.tr",
-        "sifreHash": "pbkdf2:sha256:örnek_hash_buraya",
-        "takipEdilenler": [1]
+        "kullaniciId": 2,
+        "kullaniciAdi": "mehmet_halil_mugulday",
+        "email": "25100011412@erbakan.edu.tr",
+        "sifreHash": "",
+        "uni": "Bilgisayar Muhendisligi",
+        "takipEdilenler": []
     },
     {
-        "kullanicild": 3,
-        "kullaniciAdi": "busra_tas",
-        "email": "busra@ogr.edu.tr",
-        "sifreHash": "pbkdf2:sha256:örnek_hash_buraya",
-        "takipEdilenler": [1, 2]
+        "kullaniciId": 3,
+        "kullaniciAdi": "sudem_arslan",
+        "email": "24100011061@erbakan.edu.tr",
+        "sifreHash": "",
+        "uni": "Bilgisayar Muhendisligi",
+        "takipEdilenler": []
+    },
+    {
+        "kullaniciId": 4,
+        "kullaniciAdi": "yagmur_nisa_suslu",
+        "email": "24100011049@erbakan.edu.tr",
+        "sifreHash": "",
+        "uni": "Bilgisayar Muhendisligi",
+        "takipEdilenler": []
+    },
+    {
+        "kullaniciId": 5,
+        "kullaniciAdi": "emine_sude_alisarli",
+        "email": "23100011035@erbakan.edu.tr",
+        "sifreHash": "",
+        "uni": "Bilgisayar Muhendisligi",
+        "takipEdilenler": []
     }
 ]
