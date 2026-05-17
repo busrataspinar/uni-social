@@ -45,7 +45,7 @@ class VeriDeposu:
         """
         if not self.tum_kullanicilar:
             return 1
-        return max(k["kullanicild"] for k in self.tum_kullanicilar) + 1
+        return max(k["kullaniciId"] for k in self.tum_kullanicilar) + 1
 
     def yeni_gonderi_id(self):
         """
