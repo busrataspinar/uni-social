@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from models.Kullanici import Kullanici
 from models.Oturum import Oturum
-from data.VeriDeposu import VeriDeposu
+from utils.VeriDeposu import VeriDeposu
 
 
 def _yeni_id() -> int:
