@@ -6,44 +6,42 @@ class Yorum:
     Gönderilere yapılan geri bildirimlerin verilerini saklar.
     """
 
-    def __init__(self, yorumId, gonderild, yazarld, icerik, tarih):
+    def __init__(self, yorumId, gonderiId, yazarId, icerik, tarih):
         """
         Yorum nesnesini başlatır.
 
         Args:
             yorumId (int): Her yoruma verilen özel kimlik numarası.
-            gonderild (int): Yorumun hangi gönderiye ait olduğunu belirten ID.
-            yazarld (int): Yorumu yazan öğrencinin kullanıcı ID'si.
+            gonderiId (int): Yorumun hangi gönderiye ait olduğunu belirten ID.
+            yazarId (int): Yorumu yazan öğrencinin kullanıcı ID'si.
             icerik (str): Yorum metninin içeriği.
-            tarih (datetime): Yorumun sisteme girildiği tarih ve saat.
+            tarih (str): Yorumun sisteme girildiği tarih ve saat (ISO 8601 string).
         """
         self.yorumId = yorumId
-        self.gonderild = gonderild
-        self.yazarld = yazarld
+        self.gonderiId = gonderiId
+        self.yazarId = yazarId
         self.icerik = icerik
         self.tarih = tarih
 
     def to_dict(self):
         """
         Yorum nesnesini JSON'a yazılabilir sözlük formatına dönüştürür.
-        datetime alanı ISO 8601 string formatına çevrilir.
 
         Returns:
             dict: Yorum verilerini içeren sözlük.
         """
         return {
             "yorumId": self.yorumId,
-            "gonderild": self.gonderild,
-            "yazarld": self.yazarld,
+            "gonderiId": self.gonderiId,
+            "yazarId": self.yazarId,
             "icerik": self.icerik,
-            "tarih": self.tarih.isoformat()
+            "tarih": self.tarih if isinstance(self.tarih, str) else self.tarih.isoformat()
         }
 
     @classmethod
     def from_dict(cls, veri):
         """
         Sözlük formatındaki veriyi Yorum nesnesine dönüştürür.
-        tarih alanı ISO 8601 string'den datetime nesnesine çevrilir.
 
         Args:
             veri (dict): JSON'dan okunan yorum verisi.
@@ -53,8 +51,8 @@ class Yorum:
         """
         return cls(
             yorumId=veri["yorumId"],
-            gonderild=veri["gonderild"],
-            yazarld=veri["yazarld"],
+            gonderiId=veri["gonderiId"],
+            yazarId=veri["yazarId"],
             icerik=veri["icerik"],
-            tarih=datetime.fromisoformat(veri["tarih"])
+            tarih=veri["tarih"]
         )
