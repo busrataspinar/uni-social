@@ -1,5 +1,3 @@
-
-
 from datetime import datetime
 from models.Yorum import Yorum
 from data.VeriDeposu import VeriDeposu
