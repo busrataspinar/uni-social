@@ -1,4 +1,4 @@
-from JsonIsleyicisi import JsonIsleyicisi
+from utils.JsonIsleyicisi import JsonIsleyicisi
 
 
 class VeriDeposu:
