@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from models.Gonderi import Gonderi
-from data.VeriDeposu import VeriDeposu
+from utils.VeriDeposu import VeriDeposu
 
 
 class GonderiYonetici:
