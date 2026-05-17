@@ -38,5 +38,12 @@
         "sifreHash": "scrypt:32768:8:1$iAj73matlWCvq49l$c63ff3343edd434445e60991b295b83ca3a0cc7c5310539f68ad3e29687b93dc187bb682c23abaf9cf6cb1488a6e411212703db14a97be978cd8311f9e892d54",
         "uni": "Bilgisayar Muhendisligi",
         "takipEdilenler": []
+    },
+    {
+        "kullaniciId": 99341831,
+        "kullaniciAdi": "Birol Akıncı",
+        "email": "25100011416@erbakan.edu.tr",
+        "sifreHash": "scrypt:32768:8:1$ImAqXwoKkcDWcJLL$332daf26bffb8674a48748e17cb83826d53fb60f0f63443cba3f172049fd091cfcb8fcef751acc460b444bb71cc8ebc222ee70dff3cc8d78252a352814920e35",
+        "takipEdilenler": []
     }
 ]
