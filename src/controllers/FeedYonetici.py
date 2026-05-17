@@ -9,76 +9,78 @@ class FeedYonetici:
     # ---------------------------------------------------------
     # YARDIMCI FONKSİYON
     # ---------------------------------------------------------
-    def kullanici_bul(self, kullanicild):
+    def kullanici_bul(self, kullaniciId):
         """
         Amaç:Verilen kullanıcı ID'sine ait kullanıcıyı bulmak.
         Detay:Kullanıcı listesi üzerinde gezilerek eşleşen ID aranır.
-        Parametre:kullanicild: Aranan kullanıcı ID'si
+        Parametre:kullaniciId: Aranan kullanıcı ID'si
         Dönüş:dict | None: Kullanıcı bulunursa verisi, bulunamazsa None
         """
         for kullanici in self.kullanicilar or []:
-            if kullanici.get("kullanicild") == kullanicild:
+            if kullanici.get("kullaniciId") == kullaniciId:
                 return kullanici
         return None
+
     # ---------------------------------------------------------
     # UC12: TAKİP SİSTEMİ
     # ---------------------------------------------------------
-    def kullanici_takip_et(self, aktif_kullanicild, hedef_kullanicild):
+    def kullanici_takip_et(self, aktif_kullaniciId, hedef_kullaniciId):
         """
         Amaç:Aktif kullanıcının başka bir kullanıcıyı takip etmesini sağlamak.
         Detay:- Kullanıcılar kontrol edilir
             - Takip listesine ekleme yapılır
             - Güncel veri JSON dosyasına kaydedilir
-        Parametreler:aktif_kullanicild: Takip eden kullanıcı
-            hedef_kullanicild: Takip edilecek kullanıcı
+        Parametreler:aktif_kullaniciId: Takip eden kullanıcı
+            hedef_kullaniciId: Takip edilecek kullanıcı
         Dönüş:bool: İşlem başarılıysa True, değilse False
         """
-        aktif_kullanici = self.kullanici_bul(aktif_kullanicild)
-        hedef_kullanici = self.kullanici_bul(hedef_kullanicild)
+        aktif_kullanici = self.kullanici_bul(aktif_kullaniciId)
+        hedef_kullanici = self.kullanici_bul(hedef_kullaniciId)
 
-        if not aktif_kullanici or not hedef_kullanici or aktif_kullanicild == hedef_kullanicild:
+        if not aktif_kullanici or not hedef_kullanici or aktif_kullaniciId == hedef_kullaniciId:
             return False
 
         aktif_kullanici.setdefault("takipEdilenler", [])
 
-        if hedef_kullanicild not in aktif_kullanici["takipEdilenler"]:
-            aktif_kullanici["takipEdilenler"].append(hedef_kullanicild)
+        if hedef_kullaniciId not in aktif_kullanici["takipEdilenler"]:
+            aktif_kullanici["takipEdilenler"].append(hedef_kullaniciId)
             self.depo.kullanicilari_kaydet()
             return True
 
         return False
 
-    def takibi_birak(self, aktif_kullanicild, takipten_cikilacakld):
+    def takibi_birak(self, aktif_kullaniciId, takipten_cikilacakId):
         """
         Amaç:Aktif kullanıcının bir kullanıcıyı takipten çıkmasını sağlamak.
         Detay:- Takip listesi kontrol edilir
             - İlgili kullanıcı listeden kaldırılır
             - Güncel veri JSON'a kaydedilir
-        Parametreler:aktif_kullanicild: İşlem yapan kullanıcı
-            takipten_cikilacakld: Takipten çıkarılacak kullanıcı
+        Parametreler:aktif_kullaniciId: İşlem yapan kullanıcı
+            takipten_cikilacakId: Takipten çıkarılacak kullanıcı
         Dönüş:bool: İşlem başarılıysa True, değilse False
         """
-        aktif_kullanici = self.kullanici_bul(aktif_kullanicild)
+        aktif_kullanici = self.kullanici_bul(aktif_kullaniciId)
 
         if aktif_kullanici:
             takip_listesi = aktif_kullanici.setdefault("takipEdilenler", [])
 
-            if takipten_cikilacakld in takip_listesi:
-                takip_listesi.remove(takipten_cikilacakld)
+            if takipten_cikilacakId in takip_listesi:
+                takip_listesi.remove(takipten_cikilacakId)
                 self.depo.kullanicilari_kaydet()
                 return True
 
         return False
+
     # ---------------------------------------------------------
     # UC13: ANA SAYFA AKIŞI (FEED)
     # ---------------------------------------------------------
-    def ana_akisi_olustur(self, aktif_kullanicild, yorum_yonetici, begeni_yonetici):
+    def ana_akisi_olustur(self, aktif_kullaniciId, yorum_yonetici, begeni_yonetici):
         """
         Amaç: Kullanıcının takip ettiği kişilerin gönderilerini beğeni ve yorum sayılarıyla
               birlikte, tarihe göre sıralı (yeniden eskiye) şekilde getirmek.
         """
-        # Kullanıcı kontrolü
-        aktif_kullanici = self.kullanici_bul(aktif_kullanicild)
+        # 1. Kullanıcı kontrolü (Güvenlik Önlemi)
+        aktif_kullanici = self.kullanici_bul(aktif_kullaniciId)
         if not aktif_kullanici:
             return {"mesaj": "Kullanıcı bulunamadı.", "gonderiler": []}
 
@@ -87,10 +89,9 @@ class FeedYonetici:
         if not takip_listesi:
             return {"mesaj": "Akış boş. Takip ederek akışınızı canlandırabilirsiniz.", "gonderiler": []}
 
-        #Sadece takip edilen kişilerin gönderilerini filtrele
         filtrelenmiş_gonderiler = [
             g for g in self.gonderiler or []
-            if g.get("yazarld") in takip_listesi
+            if g.get("yazarId") in takip_listesi
         ]
 
         if not filtrelenmiş_gonderiler:
@@ -99,10 +100,9 @@ class FeedYonetici:
 
         filtrelenmiş_gonderiler.sort(key=lambda x: x.get("tarih", ""), reverse=True)
 
-
         akistan_gelenler = []
         for g in filtrelenmiş_gonderiler:
-            gonderi_id = g.get("gonderild")
+            gonderi_id = g.get("gonderiId")
 
             akistan_gelenler.append({
                 "gonderi": g,
@@ -112,23 +112,23 @@ class FeedYonetici:
 
         return {"mesaj": "Akış güncellendi.", "gonderiler": akistan_gelenler}
 
-    def akisi_yenile(self, aktif_kullanicild, yorum_yonetici, begeni_yonetici):
+    def akisi_yenile(self, aktif_kullaniciId, yorum_yonetici, begeni_yonetici):
         """
         Amaç: Kullanıcının akışını güncellemek.
         Detay: VeriDeposu'ndan kullanıcı ve gönderi listeleri yeniden yüklenir,
                beğeni ve yorum yöneticileriyle birlikte ana akış güncellenir.
         Parametreler:
-            aktif_kullanicild (int) – Akışı yenilenecek kullanıcı ID'si
+            aktif_kullaniciId (int) – Akışı yenilenecek kullanıcı ID'si
             yorum_yonetici – Güncel yorum sayılarını almak için yorum yönetim nesnesi
             begeni_yonetici – Güncel beğeni sayılarını almak için beğeni yönetim nesnesi
         Dönüş: dict – Mesaj ve güncel, zenginleştirilmiş gönderi listesi
         """
-
+        # Bellekteki havuzun en taze referanslarını senkronize et
         self.kullanicilar = self.depo.tum_kullanicilar
         self.gonderiler = self.depo.tum_gonderiler
 
-        # Yeni eklenen parametreleri ana_akisi_olustur'a güvenli bir şekilde gonder
-        return self.ana_akisi_olustur(aktif_kullanicild, yorum_yonetici, begeni_yonetici)
+        # Yeni eklenen parametreleri ana_akisi_olustur'a güvenli bir şekilde pasla
+        return self.ana_akisi_olustur(aktif_kullaniciId, yorum_yonetici, begeni_yonetici)
 
     # ---------------------------------------------------------
     # UC14 & UC15: ARAMA VE FİLTRELEME
@@ -147,7 +147,7 @@ class FeedYonetici:
 
         return [
             {
-                "kullanicild": k.get("kullanicild"),
+                "kullaniciId": k.get("kullaniciId"),
                 "kullaniciAdi": k.get("kullaniciAdi")
             }
             for k in self.kullanicilar or []
@@ -177,35 +177,36 @@ class FeedYonetici:
         sonuclar.sort(key=lambda x: x.get("tarih", ""), reverse=True)
 
         return sonuclar
+
     # ---------------------------------------------------------
     # PROFİL VE LİSTELEME DESTEĞİ
     # ---------------------------------------------------------
-    def kullanici_gonderilerini_getir(self, hedef_kullanicild):
+    def kullanici_gonderilerini_getir(self, hedef_kullaniciId):
         """
         Amaç:Belirli bir kullanıcıya ait gönderileri getirmek.
         Detay:Tüm gönderiler filtrelenerek sadece ilgili kullanıcıya ait olanlar alınır.
-        Parametre:hedef_kullanicild: Gönderileri alınacak kullanıcı
+        Parametre:hedef_kullaniciId: Gönderileri alınacak kullanıcı
         Dönüş:list: Kullanıcının gönderileri (tarihe göre sıralı)
         """
         postlar = [
             g for g in self.gonderiler or []
-            if g.get("yazarld") == hedef_kullanicild
+            if g.get("yazarId") == hedef_kullaniciId
         ]
 
         postlar.sort(key=lambda x: x.get("tarih", ""), reverse=True)
 
         return postlar
 
-    def istatistikleri_getir(self, kullanicild):
+    def istatistikleri_getir(self, kullaniciId):
         """
         Amaç:Kullanıcının profil istatistiklerini hesaplamak.
         Detay:- Gönderi sayısı hesaplanır
             - Takip edilen kullanıcı sayısı alınır
             - Takipçi sayısı diğer kullanıcılar üzerinden hesaplanır
-        Parametre:kullanicild: İstatistikleri hesaplanacak kullanıcı
+        Parametre:kullaniciId: İstatistikleri hesaplanacak kullanıcı
         Dönüş:dict: Gönderi, takipçi ve takip edilen sayıları
         """
-        kullanici = self.kullanici_bul(kullanicild)
+        kullanici = self.kullanici_bul(kullaniciId)
 
         if not kullanici:
             return {
@@ -216,14 +217,14 @@ class FeedYonetici:
 
         gonderi_sayisi = sum(
             1 for g in self.gonderiler or []
-            if g.get("yazarld") == kullanicild
+            if g.get("yazarId") == kullaniciId
         )
 
         takip_edilen_sayisi = len(kullanici.get("takipEdilenler", []))
 
         takipci_sayisi = sum(
             1 for k in self.kullanicilar or []
-            if kullanicild in k.get("takipEdilenler", [])
+            if kullaniciId in k.get("takipEdilenler", [])
         )
 
         return {
@@ -232,15 +233,15 @@ class FeedYonetici:
             "takip_edilen_sayisi": takip_edilen_sayisi
         }
 
-    def takip_listelerini_getir(self, kullanicild):
+    def takip_listelerini_getir(self, kullaniciId):
         """
         Amaç:Kullanıcının takipçi ve takip ettiği kullanıcı listelerini oluşturmak.
         Detay:- Takip edilen kullanıcılar listelenir
             - Diğer kullanıcılar üzerinden takipçiler bulunur
-        Parametre:kullanicild: Listeleri alınacak kullanıcı
+        Parametre:kullaniciId: Listeleri alınacak kullanıcı
         Dönüş:dict: Takipçiler ve takip edilenler listesi
         """
-        kullanici = self.kullanici_bul(kullanicild)
+        kullanici = self.kullanici_bul(kullaniciId)
 
         if not kullanici:
             return {"takipciler": [], "takip_edilenler": []}
@@ -251,13 +252,13 @@ class FeedYonetici:
         takip_edilenler = []
 
         for k in self.kullanicilar or []:
-            k_id = k.get("kullanicild")
+            k_id = k.get("kullaniciId")
             k_isim = k.get("kullaniciAdi")
 
             if k_id in takip_edilen_idler:
                 takip_edilenler.append({"id": k_id, "isim": k_isim})
 
-            if kullanicild in k.get("takipEdilenler", []):
+            if kullaniciId in k.get("takipEdilenler", []):
                 takipciler.append({"id": k_id, "isim": k_isim})
 
         return {
