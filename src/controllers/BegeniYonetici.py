@@ -1,7 +1,7 @@
 
 from datetime import datetime
 from models.Begeni import Begeni
-from data.VeriDeposu import VeriDeposu
+from utils.VeriDeposu import VeriDeposu
 
 
 class BegeniYonetici:
