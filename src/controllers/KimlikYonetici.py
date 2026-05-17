@@ -39,8 +39,8 @@ class KimlikYonetici:
             self,
             kullanici_adi: str,
             email: str,
-            sifre: str,
-            uni: str
+            uni: str,
+            sifre: str
     ) -> dict:
         """
         Gerekli doğrulamaları yaparak yeni kullanıcı kaydı oluşturur.

@@ -29,7 +29,7 @@ class GonderiYonetici:
         # Depodaki ham dict listesini, korumalı Gonderi nesne listesine çeviriyoruz
         self.gonderiler: list[Gonderi] = [
             Gonderi(
-                gonderiId=g["gonderiId"],
+                gonderiId=g["gonderild"],
                 yazarId=g["yazarId"],
                 icerik=g["icerik"],
                 tarih=g["tarih"]
