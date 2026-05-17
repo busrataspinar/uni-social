@@ -30,10 +30,10 @@ class VeriDeposu:
         """
         self.isleyici = JsonIsleyicisi()
         self.tum_kullanicilar = self.isleyici.veriOku("kullanicilar")
-        self.tum_gonderiler = self.isleyici.veriOku("gonderiler")
-        self.tum_yorumlar = self.isleyici.veriOku("yorumlar")
-        self.tum_begeniler = self.isleyici.veriOku("begeniler")
-        self.tum_takipler = self.isleyici.veriOku("takipler")
+        self.tum_gonderiler   = self.isleyici.veriOku("gonderiler")
+        self.tum_yorumlar     = self.isleyici.veriOku("yorumlar")
+        self.tum_begeniler    = self.isleyici.veriOku("begeniler")
+        self.tum_takipler     = self.isleyici.veriOku("takipler")
 
     def yeni_kullanici_id(self):
         """
@@ -57,7 +57,7 @@ class VeriDeposu:
         """
         if not self.tum_gonderiler:
             return 1
-        return max(g["gonderild"] for g in self.tum_gonderiler) + 1
+        return max(g["gonderiId"] for g in self.tum_gonderiler) + 1
 
     def yeni_yorum_id(self):
         """
@@ -81,7 +81,7 @@ class VeriDeposu:
         """
         if not self.tum_begeniler:
             return 1
-        return max(b["begenild"] for b in self.tum_begeniler) + 1
+        return max(b["begeniId"] for b in self.tum_begeniler) + 1
 
     def kullanicilari_kaydet(self):
         """
