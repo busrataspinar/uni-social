@@ -60,7 +60,7 @@ def register():
         email = request.form.get('email')
         department = request.form.get('department')
         password = request.form.get('password')
-        sonuc = kimlik_yonetici.kayit_ol(email, password, name, department)
+        sonuc = kimlik_yonetici.kayit_ol(name, email, department, password)
         
         if sonuc.get("basarili"):
             flash('Hesabınız başarıyla oluşturuldu! Şimdi .edu e-postanızla giriş yapabilirsiniz.', 'success')
@@ -81,7 +81,6 @@ def feed():
         flash('Lütfen önce giriş yapın!', 'warning')
         return redirect(url_for('login'))
         
-    # [KRİTİK ENTEGRASYON] Arkadaşının FeedYonetici.py içindeki ham listesini alıp
     # HTML şablonumuzun okuyabileceği (author_name, content, likes_count vb.) temiz bir yapıya dönüştürüyoruz
     ham_gonderiler = feed_yonetici.gonderiler
     canli_posts = []
